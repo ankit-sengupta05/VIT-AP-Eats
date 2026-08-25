@@ -15,7 +15,7 @@ export default function CustomerHeader() {
 
   return (
     <>
-      <header className="sticky top-0 z-50 bg-[--color-surface-container-lowest] border-b border-[--color-border] shadow-[--shadow-sm]">
+      <header className="sticky top-0 z-50 bg-white dark:bg-zinc-950 border-b border-[--color-border] shadow-md transition-colors">
         <div className="max-w-[1280px] mx-auto px-4 md:px-10 h-16 flex items-center gap-3">
           {/* Brand */}
           <Link href="/" className="flex items-center gap-2 mr-auto shrink-0">

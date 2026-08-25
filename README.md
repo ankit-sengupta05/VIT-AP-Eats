@@ -1,42 +1,105 @@
-# VIT-AP Eats 🍛
+<div align="center">
+  <img src="./vitap-eats/public/icons/icon-512x512.png" width="128" height="128" alt="VIT-AP Eats Logo">
+  <h1>🍛 VIT-AP Eats</h1>
+  <p><b>A blazing-fast, edge-rendered food delivery platform for the VIT-AP University campus.</b></p>
+  
+  [![Next.js](https://img.shields.io/badge/Next.js-16.3-black?logo=next.js)](https://nextjs.org/)
+  [![Cloudflare Workers](https://img.shields.io/badge/Cloudflare_Workers-Hono-f38020?logo=cloudflare)](https://workers.cloudflare.com/)
+  [![Supabase](https://img.shields.io/badge/Supabase-PostGIS-3ECF8E?logo=supabase)](https://supabase.com/)
+  [![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-v4-38B2AC?logo=tailwind-css)](https://tailwindcss.com/)
+</div>
 
-A full-stack campus food delivery platform built for VIT-AP University, Amaravati.
+<br/>
 
-## Tech Stack
-- **Frontend**: Next.js 14 (App Router) + TypeScript + Tailwind CSS
-- **Backend**: Cloudflare Workers + Hono
-- **Database**: Supabase (PostgreSQL + PostGIS)
-- **State**: Zustand (cart) + TanStack Query (server state)
+## ✨ Features
+- 🚀 **Progressive Web App (PWA)**: Installable on iOS & Android with offline-first capabilities.
+- ⚡ **Edge Architecture**: Hono APIs deployed on Cloudflare Workers for ~0ms cold starts.
+- 🗺️ **Live Delivery Tracking**: Real-time driver location via Leaflet & OpenStreetMap, powered by Supabase WebSockets.
+- 💳 **Seamless Payments**: Razorpay integration with automated webhooks and status syncing.
+- 🔐 **Role-Based Security**: Customer, Restaurant Partner, and Admin roles secured via JWT and Cloudflare KV Rate Limiting.
 
-## Project Structure
-```
-VIT-AP Eats/
-├── vitap-eats/       # Next.js frontend
-├── backend/          # Cloudflare Worker API (Hono)
-└── .env              # Single source of truth for ALL env vars (never committed)
-```
+---
 
-## Local Development Setup
+## 🏗️ Architecture
+
+VIT-AP Eats utilizes a modern, decoupled architecture designed for high scalability and minimal latency:
+
+1. **Frontend (Next.js 16)**
+   - Deployed on **Cloudflare Pages**.
+   - Handles SSR/SSG and Client-side rendering.
+   - Communicates with Supabase directly for Auth.
+   - Communicates with the backend worker for secure operations (payments, complex joins, rate limiting).
+   - State managed via Zustand & React Query.
+
+2. **Backend API (Hono)**
+   - Deployed on **Cloudflare Workers** (V8 Isolates).
+   - Interacts with Supabase using the raw REST API to bypass heavy SDK sizes on the edge.
+   - Guards sensitive routes with JWT validation middleware and sliding-window rate limiters.
+
+3. **Database & Realtime (Supabase)**
+   - **PostgreSQL + PostGIS**: Handles spatial queries (e.g. finding restaurants near a student block).
+   - **Realtime / WebSockets**: Streams order status changes from the kitchen directly to the user's phone.
+
+---
+
+## 🛠️ Local Development Setup
+
+### Prerequisites
+- [Node.js v20+](https://nodejs.org/)
+- [Supabase CLI](https://supabase.com/docs/guides/cli) (optional, for local DB)
+- [Wrangler CLI](https://developers.cloudflare.com/workers/wrangler/install-and-update/) (`npm install -g wrangler`)
 
 ### 1. Environment Variables
-All secrets live in a single root `.env` file (git-ignored). On local dev, copy the template and fill in your Supabase credentials:
-```bash
-# Create the file manually — never commit it
-C:\SDE Projects\VIT-AP Eats\.env
-```
-Required variables — see comments in `.env` for where to find each value.
+Create a single `.env` file in the root of the project.
+```env
+# Supabase
+NEXT_PUBLIC_SUPABASE_URL="your-project.supabase.co"
+NEXT_PUBLIC_SUPABASE_ANON_KEY="your-anon-key"
+SUPABASE_SERVICE_ROLE_KEY="your-service-key"
 
-### 2. Run the Backend (Cloudflare Worker)
+# Cloudflare / API
+NEXT_PUBLIC_API_URL="http://localhost:8787"
+
+# Razorpay
+NEXT_PUBLIC_RAZORPAY_KEY_ID="rzp_test_..."
+RAZORPAY_KEY_SECRET="your_secret..."
+```
+
+### 2. Start the Backend (Hono)
 ```bash
 cd backend
-npm run dev       # Auto-copies .env → .dev.vars, starts on http://localhost:8787
+npm install
+npm run dev
 ```
+The API will start at `http://localhost:8787`.
 
-### 3. Run the Frontend (Next.js)
+### 3. Start the Frontend (Next.js)
 ```bash
 cd vitap-eats
-npm run dev       # Loads ../.env via dotenv-cli, starts on http://localhost:3000
+npm install
+npm run dev
 ```
+The web app will start at `http://localhost:3000`.
 
-## Deployment / CI-CD
-On the production server, create `C:\SDE Projects\VIT-AP Eats\.env` (or the equivalent server path) with all the required variables. The CI/CD pipeline will read from this file — no secrets are embedded in the codebase.
+---
+
+## 🚀 CI/CD & Deployment
+
+This project uses **GitHub Actions** for continuous integration and continuous deployment (`.github/workflows/deploy.yml`).
+
+On every push to `main`:
+1. Code is linted and security audited (`npm audit --audit-level=critical`).
+2. The Hono backend is compiled and deployed to Cloudflare Workers.
+3. The Next.js frontend is built and deployed to Cloudflare Pages.
+
+To enable this, set the following secrets in your GitHub repository:
+- `CLOUDFLARE_API_TOKEN`
+- `CLOUDFLARE_ACCOUNT_ID`
+- `SUPABASE_URL`
+- `SUPABASE_ANON_KEY`
+- `RAZORPAY_KEY_ID`
+
+---
+<div align="center">
+  <i>Built for the students, by the students. 🚀</i>
+</div>
