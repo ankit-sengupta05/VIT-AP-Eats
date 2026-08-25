@@ -1,72 +1,79 @@
 "use client";
-import { CheckCircle2, Circle, Clock, MapPin, Phone, Bike } from "lucide-react";
-import { cn } from "@/lib/utils";
-import { rupees } from "@/lib/utils";
+import { CheckCircle2, Circle, Clock, MapPin, Phone, Bike, Loader2 } from "lucide-react";
+import { cn, rupees } from "@/lib/utils";
 import Link from "next/link";
-
-/* ─── Mock order state ────────────────────────────────────────────────────── */
-const ORDER = {
-  id: "ORD-2026-001",
-  status: "on_the_way" as const,
-  placedAt: "7:45 PM",
-  restaurant: { name: "Spice Garden", address: "Near Main Gate, VIT-AP" },
-  partner: { name: "Ravi K.", phone: "+91 98765 43210", rating: 4.8, completedOrders: 342 },
-  items: [
-    { name: "Chicken Dum Biryani", qty: 1, price: 149 },
-    { name: "Butter Naan", qty: 2, price: 29 },
-  ],
-  total: 237,
-  estimatedDelivery: "8:18 PM",
-};
+import { use } from "react";
+import { useOrder } from "@/lib/hooks";
+import { Skeleton } from "@/components/ui/Skeleton";
 
 const STEPS = [
-  { key: "placed",    label: "Order Placed",    detail: "We've received your order",        time: "7:45 PM" },
-  { key: "accepted",  label: "Order Accepted",  detail: "Restaurant confirmed your order",  time: "7:47 PM" },
-  { key: "preparing", label: "Preparing",       detail: "Chef is cooking your food",        time: "7:50 PM" },
-  { key: "picked_up", label: "Picked Up",       detail: "Partner is on the way to you",    time: "" },
-  { key: "on_the_way",label: "On the Way",      detail: "Your order is nearby!",            time: "" },
-  { key: "delivered", label: "Delivered",       detail: "Enjoy your meal!",                 time: "" },
+  { key: "placed",     label: "Order Placed",   detail: "We've received your order"           },
+  { key: "accepted",   label: "Order Accepted", detail: "Restaurant confirmed your order"     },
+  { key: "preparing",  label: "Preparing",      detail: "Chef is cooking your food"           },
+  { key: "picked_up",  label: "Picked Up",      detail: "Partner is on the way to you"       },
+  { key: "on_the_way", label: "On the Way",     detail: "Your order is nearby!"              },
+  { key: "delivered",  label: "Delivered",      detail: "Enjoy your meal! 🎉"                },
 ] as const;
 
-type Status = typeof STEPS[number]["key"];
-const STATUS_ORDER: Status[] = ["placed", "accepted", "preparing", "picked_up", "on_the_way", "delivered"];
+const STATUS_ORDER = STEPS.map((s) => s.key);
 
-export default function OrderTrackingPage() {
-  const currentIdx = STATUS_ORDER.indexOf(ORDER.status);
+export default function OrderTrackingPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = use(params);
+  const { data: order, isLoading, isError } = useOrder(id);
+
+  if (isLoading) {
+    return (
+      <div className="max-w-[900px] mx-auto px-4 md:px-10 py-10 space-y-4">
+        <Skeleton className="h-10 w-1/3" />
+        <Skeleton className="h-24 w-full" />
+        <div className="grid md:grid-cols-2 gap-6">
+          <Skeleton className="h-72" />
+          <div className="space-y-4"><Skeleton className="h-32" /><Skeleton className="h-32" /></div>
+        </div>
+      </div>
+    );
+  }
+
+  if (isError || !order) {
+    return (
+      <div className="text-center py-20">
+        <p className="text-5xl mb-3">😕</p>
+        <p className="font-semibold text-[--color-on-surface]">Order not found</p>
+        <Link href="/" className="mt-4 inline-block text-[--color-primary] font-semibold hover:underline">← Back to Home</Link>
+      </div>
+    );
+  }
+
+  const currentIdx = STATUS_ORDER.indexOf(order.status as any);
 
   return (
     <div className="max-w-[900px] mx-auto px-4 md:px-10 py-6 md:py-10">
-      {/* Header */}
       <div className="mb-6">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-2xl font-extrabold text-[--color-on-surface]" style={{ fontFamily: "var(--font-heading)" }}>
-              Tracking Order
-            </h1>
-            <p className="text-sm text-[--color-on-surface-variant]">{ORDER.id} · Placed at {ORDER.placedAt}</p>
+            <h1 className="text-2xl font-extrabold text-[--color-on-surface]" style={{ fontFamily: "var(--font-heading)" }}>Tracking Order</h1>
+            <p className="text-sm text-[--color-on-surface-variant]">#{id.split("-")[0].toUpperCase()} · {new Date(order.created_at).toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit" })}</p>
           </div>
-          <span className="px-3 py-1 rounded-[--radius-full] text-sm font-bold text-white" style={{ background: "var(--color-warning)" }}>
-            {ORDER.status.replace("_", " ").replace(/\b\w/g, (c) => c.toUpperCase())}
+          <span className="px-3 py-1 rounded-[--radius-full] text-sm font-bold text-white capitalize" style={{ background: "var(--color-warning, #F59E0B)" }}>
+            {order.status?.replace(/_/g, " ")}
           </span>
         </div>
-
-        {/* ETA banner */}
-        <div className="mt-4 flex items-center gap-3 bg-[--color-primary-fixed] rounded-[--radius-lg] px-4 py-3">
+        <div className="mt-4 flex items-center gap-3 rounded-[--radius-lg] px-4 py-3" style={{ background: "var(--color-primary-fixed)" }}>
           <Clock size={20} style={{ color: "var(--color-primary)" }} />
           <div>
-            <p className="font-bold text-[--color-on-surface]">Estimated delivery: {ORDER.estimatedDelivery}</p>
-            <p className="text-xs text-[--color-on-surface-variant]">Your food is on the way 🛵</p>
+            <p className="font-bold text-[--color-on-surface]">Order is on its way</p>
+            <p className="text-xs text-[--color-on-surface-variant]">Updates refresh automatically every 15 seconds</p>
           </div>
         </div>
       </div>
 
       <div className="grid md:grid-cols-2 gap-6">
-        {/* Status timeline */}
+        {/* Timeline */}
         <div className="bg-[--color-surface-container-lowest] rounded-[--radius-lg] shadow-[--shadow-md] border border-[--color-border] p-5">
           <h2 className="font-bold text-[--color-on-surface] mb-4" style={{ fontFamily: "var(--font-heading)" }}>Order Status</h2>
           <div className="space-y-4">
             {STEPS.map((step, i) => {
-              const done    = i <= currentIdx;
+              const done = i <= currentIdx;
               const current = i === currentIdx;
               return (
                 <div key={step.key} className="flex gap-3">
@@ -77,13 +84,12 @@ export default function OrderTrackingPage() {
                       <Circle size={20} className="text-[--color-border]" />
                     )}
                     {i < STEPS.length - 1 && (
-                      <div className={cn("w-0.5 flex-1 mt-1 mb-1", done ? "bg-[--color-tertiary]" : "bg-[--color-border]")} style={{ minHeight: "20px" }} />
+                      <div className={cn("w-0.5 flex-1 mt-1 mb-1 min-h-[20px]", done ? "bg-[--color-tertiary]" : "bg-[--color-border]")} />
                     )}
                   </div>
                   <div className={cn("flex-1 pb-1", !done && "opacity-40")}>
                     <p className={cn("font-semibold text-sm", current && "text-[--color-primary]")}>{step.label}</p>
                     <p className="text-xs text-[--color-on-surface-variant]">{step.detail}</p>
-                    {step.time && <p className="text-xs text-[--color-on-surface-variant] mt-0.5">{step.time}</p>}
                   </div>
                 </div>
               );
@@ -92,26 +98,24 @@ export default function OrderTrackingPage() {
         </div>
 
         <div className="space-y-4">
-          {/* Partner info */}
-          <div className="bg-[--color-surface-container-lowest] rounded-[--radius-lg] shadow-[--shadow-md] border border-[--color-border] p-4">
-            <h2 className="font-bold text-[--color-on-surface] mb-3" style={{ fontFamily: "var(--font-heading)" }}>Your Delivery Partner</h2>
-            <div className="flex items-center gap-3">
-              <div className="w-12 h-12 rounded-full flex items-center justify-center text-white font-bold text-lg" style={{ background: "var(--color-primary)" }}>
-                {ORDER.partner.name[0]}
+          {/* Partner */}
+          {order.partner && (
+            <div className="bg-[--color-surface-container-lowest] rounded-[--radius-lg] shadow-[--shadow-md] border border-[--color-border] p-4">
+              <h2 className="font-bold text-[--color-on-surface] mb-3" style={{ fontFamily: "var(--font-heading)" }}>Your Delivery Partner</h2>
+              <div className="flex items-center gap-3">
+                <div className="w-12 h-12 rounded-full flex items-center justify-center text-white font-bold text-lg" style={{ background: "var(--color-primary)" }}>
+                  {order.partner.full_name?.[0]}
+                </div>
+                <div className="flex-1">
+                  <p className="font-semibold text-[--color-on-surface]">{order.partner.full_name}</p>
+                  <p className="text-xs text-[--color-on-surface-variant]">⭐ {order.partner.rating}</p>
+                </div>
+                <a href={`tel:${order.partner.phone}`} className="w-10 h-10 rounded-full flex items-center justify-center text-white hover:opacity-80 transition-opacity" style={{ background: "var(--color-tertiary)" }}>
+                  <Phone size={16} />
+                </a>
               </div>
-              <div className="flex-1">
-                <p className="font-semibold text-[--color-on-surface]">{ORDER.partner.name}</p>
-                <p className="text-xs text-[--color-on-surface-variant]">⭐ {ORDER.partner.rating} · {ORDER.partner.completedOrders} deliveries</p>
-              </div>
-              <a
-                href={`tel:${ORDER.partner.phone}`}
-                className="w-10 h-10 rounded-full flex items-center justify-center text-white hover:opacity-80 transition-opacity"
-                style={{ background: "var(--color-tertiary)" }}
-              >
-                <Phone size={16} />
-              </a>
             </div>
-          </div>
+          )}
 
           {/* Addresses */}
           <div className="bg-[--color-surface-container-lowest] rounded-[--radius-lg] shadow-[--shadow-md] border border-[--color-border] p-4 space-y-3">
@@ -121,8 +125,7 @@ export default function OrderTrackingPage() {
               </div>
               <div>
                 <p className="text-xs text-[--color-on-surface-variant]">Pickup from</p>
-                <p className="font-semibold text-sm text-[--color-on-surface]">{ORDER.restaurant.name}</p>
-                <p className="text-xs text-[--color-on-surface-variant]">{ORDER.restaurant.address}</p>
+                <p className="font-semibold text-sm text-[--color-on-surface]">{order.restaurants?.name}</p>
               </div>
             </div>
             <div className="flex gap-3">
@@ -131,25 +134,25 @@ export default function OrderTrackingPage() {
               </div>
               <div>
                 <p className="text-xs text-[--color-on-surface-variant]">Delivering to</p>
-                <p className="font-semibold text-sm text-[--color-on-surface]">Room 404, Hostel Block C</p>
-                <p className="text-xs text-[--color-on-surface-variant]">VIT-AP Campus, Amaravati</p>
+                <p className="font-semibold text-sm text-[--color-on-surface]">{order.delivery_address?.label}</p>
+                <p className="text-xs text-[--color-on-surface-variant]">{order.delivery_address?.line1}</p>
               </div>
             </div>
           </div>
 
-          {/* Order summary */}
+          {/* Order Summary */}
           <div className="bg-[--color-surface-container-lowest] rounded-[--radius-lg] shadow-[--shadow-md] border border-[--color-border] p-4">
             <h2 className="font-bold text-[--color-on-surface] mb-3" style={{ fontFamily: "var(--font-heading)" }}>Order Summary</h2>
             <div className="space-y-2">
-              {ORDER.items.map((item) => (
-                <div key={item.name} className="flex justify-between text-sm">
-                  <span className="text-[--color-on-surface-variant]">{item.qty}× {item.name}</span>
-                  <span className="tabular-nums font-medium">{rupees(item.price * item.qty)}</span>
+              {order.order_items?.map((item: any) => (
+                <div key={item.id} className="flex justify-between text-sm">
+                  <span className="text-[--color-on-surface-variant]">{item.quantity}× {item.menu_items?.name}</span>
+                  <span className="tabular-nums font-medium">{rupees(item.unit_price * item.quantity)}</span>
                 </div>
               ))}
               <div className="border-t border-[--color-border] pt-2 flex justify-between font-bold">
                 <span>Total paid</span>
-                <span className="tabular-nums">{rupees(ORDER.total)}</span>
+                <span className="tabular-nums">{rupees(order.total)}</span>
               </div>
             </div>
           </div>

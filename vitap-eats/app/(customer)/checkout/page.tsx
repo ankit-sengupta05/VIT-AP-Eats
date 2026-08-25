@@ -1,37 +1,62 @@
 "use client";
-import { useState } from "react";
 import { useCartStore } from "@/lib/store/cart";
+import { usePlaceOrder, useAddresses } from "@/lib/hooks";
 import { rupees, cn } from "@/lib/utils";
-import { MapPin, CreditCard, Wallet, ChevronLeft, ArrowRight, ShieldCheck } from "lucide-react";
+import { MapPin, CreditCard, Wallet, ChevronLeft, ArrowRight, ShieldCheck, Loader2 } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { useState } from "react";
+import { Skeleton } from "@/components/ui/Skeleton";
 
 const DELIVERY_FEE = 30;
 const PLATFORM_FEE = 5;
 
 export default function CheckoutPage() {
   const router = useRouter();
-  const { total, count, clear } = useCartStore();
+  const { items, total, count, clear } = useCartStore();
   const subtotal = total();
-  const discount = subtotal > 300 ? 50 : 0;
-  const grandTotal = subtotal + DELIVERY_FEE + PLATFORM_FEE - discount;
-  
+  const grandTotal = subtotal + DELIVERY_FEE + PLATFORM_FEE;
   const [paymentMethod, setPaymentMethod] = useState<"upi" | "card" | "cod">("upi");
-  const [isProcessing, setIsProcessing] = useState(false);
+  const [selectedAddressId, setSelectedAddressId] = useState<string | null>(null);
 
-  // Redirect to cart if empty
-  if (count() === 0 && !isProcessing) {
-    if (typeof window !== "undefined") router.push("/cart");
+  const { data: addresses = [], isLoading: addrLoading } = useAddresses();
+  const { mutate: placeOrder, isPending } = usePlaceOrder();
+
+  if (count() === 0) {
+    router.push("/cart");
     return null;
   }
 
+  const restaurantId = items[0]?.restaurantId;
+
   const handlePayment = () => {
-    setIsProcessing(true);
-    // Simulate payment delay
-    setTimeout(() => {
-      clear();
-      router.push("/order/ORD-2026-001");
-    }, 2000);
+    const address = addresses.find((a: any) => a.id === selectedAddressId) ?? addresses[0];
+    if (!address) return alert("Please add a delivery address first.");
+
+    placeOrder(
+      {
+        restaurant_id: restaurantId,
+        items: items.map((i) => ({
+          menu_item_id: i.id,
+          quantity: i.quantity,
+          unit_price: i.price,
+        })),
+        delivery_address: {
+          label: address.label,
+          line1: address.line1,
+          lat: address.lat,
+          lng: address.lng,
+        },
+        payment_method: paymentMethod,
+      },
+      {
+        onSuccess: (order) => {
+          clear();
+          router.push(`/order/${order.id}`);
+        },
+        onError: (err) => alert(err.message),
+      }
+    );
   };
 
   return (
@@ -44,21 +69,32 @@ export default function CheckoutPage() {
       </div>
 
       <div className="space-y-6">
-        {/* Delivery Address */}
+        {/* Delivery Addresses */}
         <section className="bg-[--color-surface-container-lowest] rounded-[--radius-lg] shadow-[--shadow-sm] border border-[--color-border] p-5">
           <h2 className="font-bold text-lg text-[--color-on-surface] mb-4" style={{ fontFamily: "var(--font-heading)" }}>Delivery Address</h2>
-          <div className="flex gap-4 p-4 rounded-[--radius-md] border-2 transition-colors cursor-pointer" style={{ borderColor: "var(--color-primary)", background: "var(--color-primary-fixed)" }}>
-            <div className="mt-1">
-              <MapPin size={20} style={{ color: "var(--color-primary)" }} />
+          {addrLoading ? (
+            <div className="space-y-3"><Skeleton className="h-20" /><Skeleton className="h-20" /></div>
+          ) : addresses.length === 0 ? (
+            <p className="text-sm text-[--color-on-surface-variant]">No saved addresses. Add one below.</p>
+          ) : (
+            <div className="space-y-3">
+              {addresses.map((addr: any) => (
+                <label key={addr.id}
+                  className={cn("flex items-center gap-4 p-4 rounded-[--radius-md] border-2 cursor-pointer transition-colors",
+                    (selectedAddressId ?? addresses[0]?.id) === addr.id ? "border-[--color-primary] bg-[--color-primary-fixed]" : "border-[--color-border] hover:bg-[--color-surface-container-low]")}>
+                  <input type="radio" name="address" value={addr.id} className="accent-[--color-primary]"
+                    checked={(selectedAddressId ?? addresses[0]?.id) === addr.id}
+                    onChange={() => setSelectedAddressId(addr.id)} />
+                  <div>
+                    <p className="font-bold text-sm text-[--color-on-surface]">{addr.label}</p>
+                    <p className="text-xs text-[--color-on-surface-variant]">{addr.line1}{addr.line2 ? `, ${addr.line2}` : ""}</p>
+                  </div>
+                </label>
+              ))}
             </div>
-            <div>
-              <p className="font-bold text-[--color-on-surface]">Hostel Block C, Room 404</p>
-              <p className="text-sm text-[--color-on-surface-variant] mt-1">VIT-AP Campus, Amaravati, Andhra Pradesh 522237</p>
-              <p className="text-sm font-semibold mt-2 text-[--color-on-surface]">Priya S. · +91 90000 12345</p>
-            </div>
-          </div>
-          <button className="mt-4 text-sm font-semibold text-[--color-primary] hover:underline">
-            + Add New Address
+          )}
+          <button className="mt-4 text-sm font-semibold text-[--color-primary] hover:underline flex items-center gap-1">
+            <MapPin size={14} /> Add New Address
           </button>
         </section>
 
@@ -67,51 +103,40 @@ export default function CheckoutPage() {
           <h2 className="font-bold text-lg text-[--color-on-surface] mb-4" style={{ fontFamily: "var(--font-heading)" }}>Payment Method</h2>
           <div className="space-y-3">
             {[
-              { id: "upi", label: "UPI / Google Pay", icon: Wallet },
-              { id: "card", label: "Credit / Debit Card", icon: CreditCard },
-              { id: "cod", label: "Cash on Delivery", icon: MapPin },
+              { id: "upi",  label: "UPI / Google Pay",      icon: Wallet     },
+              { id: "card", label: "Credit / Debit Card",   icon: CreditCard },
+              { id: "cod",  label: "Cash on Delivery",      icon: MapPin     },
             ].map(({ id, label, icon: Icon }) => (
-              <label
-                key={id}
-                className={cn(
-                  "flex items-center justify-between p-4 rounded-[--radius-md] border-2 cursor-pointer transition-colors hover:bg-[--color-surface-container-low]",
-                  paymentMethod === id ? "border-[--color-primary] bg-[--color-primary-fixed]" : "border-[--color-border]"
-                )}
-              >
+              <label key={id}
+                className={cn("flex items-center justify-between p-4 rounded-[--radius-md] border-2 cursor-pointer transition-colors hover:bg-[--color-surface-container-low]",
+                  paymentMethod === id ? "border-[--color-primary] bg-[--color-primary-fixed]" : "border-[--color-border]")}>
                 <div className="flex items-center gap-3">
                   <Icon size={20} className={paymentMethod === id ? "text-[--color-primary]" : "text-[--color-on-surface-variant]"} />
                   <span className="font-semibold text-[--color-on-surface]">{label}</span>
                 </div>
-                <div className={cn(
-                  "w-5 h-5 rounded-full border-2 flex items-center justify-center transition-colors",
-                  paymentMethod === id ? "border-[--color-primary]" : "border-[--color-border]"
-                )}>
+                <div className={cn("w-5 h-5 rounded-full border-2 flex items-center justify-center transition-colors",
+                  paymentMethod === id ? "border-[--color-primary]" : "border-[--color-border]")}>
                   {paymentMethod === id && <div className="w-2.5 h-2.5 rounded-full" style={{ background: "var(--color-primary)" }} />}
                 </div>
+                <input type="radio" name="payment" value={id} className="sr-only"
+                  checked={paymentMethod === id} onChange={() => setPaymentMethod(id as any)} />
               </label>
             ))}
           </div>
         </section>
 
-        {/* Pay Button */}
+        {/* Pay CTA */}
         <section className="pt-4">
-          <div className="flex items-center justify-center gap-2 mb-4 text-sm text-[--color-tertiary] font-semibold">
-            <ShieldCheck size={18} />
-            Secure checkout powered by Razorpay
+          <div className="flex items-center justify-center gap-2 mb-4 text-sm font-semibold" style={{ color: "var(--color-tertiary)" }}>
+            <ShieldCheck size={18} />Secure checkout powered by Razorpay
           </div>
-          
-          <button
-            onClick={handlePayment}
-            disabled={isProcessing}
+          <button onClick={handlePayment} disabled={isPending}
             className="w-full py-4 text-white font-bold text-lg rounded-[--radius-lg] shadow-[--shadow-lg] hover:opacity-90 active:scale-[0.98] transition-all flex items-center justify-center gap-2 disabled:opacity-70"
-            style={{ background: "var(--color-primary)" }}
-          >
-            {isProcessing ? (
-              <span className="animate-pulse">Processing Payment...</span>
+            style={{ background: "var(--color-primary)" }}>
+            {isPending ? (
+              <><Loader2 size={20} className="animate-spin" /> Processing...</>
             ) : (
-              <>
-                Pay {rupees(grandTotal)} <ArrowRight size={20} />
-              </>
+              <>Pay {rupees(grandTotal)} <ArrowRight size={20} /></>
             )}
           </button>
         </section>
