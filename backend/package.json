@@ -2,8 +2,8 @@
   "name": "backend",
   "type": "module",
   "scripts": {
-    "dev": "wrangler dev",
-    "deploy": "wrangler deploy --minify",
+    "dev": "node -e \"require('fs').copyFileSync('../.env', '.dev.vars')\" && wrangler dev",
+    "deploy": "node -e \"require('fs').copyFileSync('../.env', '.dev.vars')\" && wrangler deploy --minify",
     "cf-typegen": "wrangler types --env-interface CloudflareBindings"
   },
   "dependencies": {
