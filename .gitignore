@@ -1,0 +1,82 @@
+# =================================================================
+#  VIT-AP Eats — .gitignore
+# =================================================================
+
+# ── Secrets & credentials ─────────────────────────────────────────
+.env
+.env.local
+.env.*.local
+.dev.vars
+.dev.vars.*
+*.pem
+*.key
+*.cert
+secrets/
+
+# ── Dependencies ──────────────────────────────────────────────────
+node_modules/
+.pnp
+.pnp.js
+.yarn/install-state.gz
+
+# ── Build outputs ─────────────────────────────────────────────────
+.next/
+out/
+dist/
+build/
+.wrangler/
+*.wasm
+
+# ── Package manager locks (keep only one) ─────────────────────────
+# Uncomment whichever you are NOT using:
+# package-lock.json
+# yarn.lock
+# pnpm-lock.yaml
+
+# ── Debug & logs ──────────────────────────────────────────────────
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+*.log
+logs/
+.next/dev/logs/
+
+# ── Testing & coverage ────────────────────────────────────────────
+coverage/
+.nyc_output/
+test-results/
+playwright-report/
+
+# ── TypeScript ────────────────────────────────────────────────────
+*.tsbuildinfo
+next-env.d.ts
+
+# ── OS generated ──────────────────────────────────────────────────
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+Thumbs.db
+desktop.ini
+ehthumbs.db
+
+# ── IDE & editor ──────────────────────────────────────────────────
+.idea/
+.vscode/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+.cursor/
+
+# ── Vercel / Cloudflare Pages deploy ──────────────────────────────
+.vercel
+.cloudflare/
+
+# ── Misc ──────────────────────────────────────────────────────────
+*.local
+.cache/
+tmp/
+temp/
