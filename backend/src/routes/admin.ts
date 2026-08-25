@@ -2,12 +2,12 @@ import { Hono } from "hono";
 import { zValidator } from "@hono/zod-validator";
 import { z } from "zod";
 import { makeSupabase } from "../lib/supabase";
-import { authMiddleware } from "../middleware/auth";
+import { authMiddleware, requireRole } from "../middleware/auth";
 import type { Env } from "../types/env";
 
 export const adminRouter = new Hono<{ Bindings: Env; Variables: { userId: string; role: string } }>();
 
-adminRouter.use("*", authMiddleware);
+adminRouter.use("*", authMiddleware, requireRole("admin"));
 
 // ── Helper: write audit log ──────────────────────────────────────────────────
 async function auditLog(

@@ -3,6 +3,7 @@ import { zValidator } from "@hono/zod-validator";
 import { z } from "zod";
 import { makeSupabase } from "../lib/supabase";
 import { authMiddleware } from "../middleware/auth";
+import { orderRateLimiter } from "../middleware/rateLimiter";
 import type { Env } from "../types/env";
 
 export const paymentsRouter = new Hono<{ Bindings: Env; Variables: { userId: string; role: string } }>();
@@ -16,6 +17,7 @@ const PLATFORM_FEE = 5;
 // Creates a Razorpay order server-side and returns the order_id + key_id
 paymentsRouter.post(
   "/create-order",
+  orderRateLimiter,
   zValidator("json", z.object({
     restaurant_id: z.string().uuid(),
     items: z.array(z.object({

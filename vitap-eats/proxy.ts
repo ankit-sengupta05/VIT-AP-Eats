@@ -63,6 +63,35 @@ export async function proxy(request: NextRequest) {
     }
   }
 
+  // ── Security Headers ──────────────────────────────────────────────────────
+  // Applied to every response; customise the CSP as your integrations evolve.
+  const csp = [
+    "default-src 'self'",
+    // Scripts: self + Next.js inline scripts + Razorpay checkout
+    "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://checkout.razorpay.com",
+    // Styles: self + Google Fonts + Leaflet (inlined)
+    "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://fonts.gstatic.com",
+    // Images: self + data URIs + Supabase Storage + Unsplash + OSM tiles + Leaflet CDN markers
+    "img-src 'self' data: blob: https://*.supabase.co https://images.unsplash.com https://*.tile.openstreetmap.org https://raw.githubusercontent.com https://cdnjs.cloudflare.com",
+    // Fonts: self + Google Fonts + Leaflet CDN
+    "font-src 'self' https://fonts.gstatic.com",
+    // Connect: self + Supabase + our backend worker + Razorpay
+    `connect-src 'self' ${process.env.NEXT_PUBLIC_SUPABASE_URL ?? ""} ${process.env.NEXT_PUBLIC_API_URL ?? ""} https://api.razorpay.com wss://*.supabase.co`,
+    // Frames: Razorpay uses an iframe for 3DS/OTP
+    "frame-src https://api.razorpay.com https://checkout.razorpay.com",
+    // Service worker must come from same origin
+    "worker-src 'self' blob:",
+    // Prevent framing of our pages by 3rd-parties
+    "frame-ancestors 'none'",
+  ].join("; ");
+
+  supabaseResponse.headers.set("Content-Security-Policy", csp);
+  supabaseResponse.headers.set("X-Frame-Options", "DENY");
+  supabaseResponse.headers.set("X-Content-Type-Options", "nosniff");
+  supabaseResponse.headers.set("Referrer-Policy", "strict-origin-when-cross-origin");
+  supabaseResponse.headers.set("Permissions-Policy", "camera=(), microphone=(), geolocation=(self)");
+  supabaseResponse.headers.set("X-DNS-Prefetch-Control", "on");
+
   return supabaseResponse;
 }
 

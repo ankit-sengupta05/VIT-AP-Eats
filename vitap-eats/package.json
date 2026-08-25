@@ -7,7 +7,8 @@
     "dev": "npm run sync:env && dotenv -e ../.env -- next dev",
     "build": "npm run sync:env && dotenv -e ../.env -- next build",
     "start": "npm run sync:env && dotenv -e ../.env -- next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "audit-ci": "npm audit --audit-level=critical"
   },
   "dependencies": {
     "@ducanh2912/next-pwa": "^10.2.9",
@@ -50,5 +51,8 @@
     "sharp": "^0.35.3",
     "tailwindcss": "^4",
     "typescript": "^5"
+  },
+  "overrides": {
+    "serialize-javascript": "^6.0.2"
   }
 }
