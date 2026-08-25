@@ -109,4 +109,24 @@ export const api = {
       req<any>(`/api/partner/orders/${id}/advance`, { method: "POST" }),
     earnings: () => req<any[]>("/api/partner/earnings"),
   },
+  admin: {
+    dashboard: () => req<any>("/api/admin/dashboard"),
+    getOrders: (params?: { status?: string; limit?: number; offset?: number }) => {
+      const q = new URLSearchParams();
+      if (params?.status) q.set("status", params.status);
+      if (params?.limit) q.set("limit", params.limit.toString());
+      if (params?.offset) q.set("offset", params.offset.toString());
+      return req<any>(`/api/admin/orders?${q.toString()}`);
+    },
+    updateOrderStatus: (id: string, payload: { status: string; reason?: string }) =>
+      req<any>(`/api/admin/orders/${id}/status`, { method: "PATCH", body: JSON.stringify(payload) }),
+    getMenu: (restaurantId: string) => req<any[]>(`/api/admin/menu/${restaurantId}`),
+    createMenuItem: (restaurantId: string, payload: any) =>
+      req<any>(`/api/admin/menu/${restaurantId}`, { method: "POST", body: JSON.stringify(payload) }),
+    updateMenuItem: (itemId: string, payload: any) =>
+      req<any>(`/api/admin/menu/items/${itemId}`, { method: "PATCH", body: JSON.stringify(payload) }),
+    deleteMenuItem: (itemId: string) => req<any>(`/api/admin/menu/items/${itemId}`, { method: "DELETE" }),
+    insights: () => req<any>("/api/admin/insights"),
+    getRestaurants: () => req<any[]>("/api/admin/restaurants"),
+  },
 }
