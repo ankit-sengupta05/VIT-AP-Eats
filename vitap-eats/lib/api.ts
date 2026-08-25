@@ -53,6 +53,7 @@ export const api = {
         method: "PATCH",
         body: JSON.stringify({ status }),
       }),
+    cancel: (id: string) => req<any>(`/api/orders/${id}/cancel`, { method: "POST" }),
   },
   profile: {
     get: () => req<any>("/api/profile"),

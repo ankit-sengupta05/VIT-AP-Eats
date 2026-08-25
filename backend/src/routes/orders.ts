@@ -134,3 +134,43 @@ ordersRouter.patch("/:id/status", zValidator("json", z.object({
   if (error || !data) return c.json({ error: "Update failed" }, 500);
   return c.json({ data });
 });
+
+// POST /api/orders/:id/cancel — cancel an order (customer only if not prepared)
+ordersRouter.post("/:id/cancel", async (c) => {
+  const { id } = c.req.param();
+  const userId = c.get("userId");
+  const sb = makeSupabase(c.env);
+
+  // 1. Fetch current status
+  const { data: order, error: fetchErr } = await sb
+    .from("orders")
+    .select("status")
+    .eq("id", id)
+    .eq("customer_id", userId)
+    .single();
+
+  if (fetchErr || !order) return c.json({ error: "Order not found" }, 404);
+
+  // 2. Enforce cancellation rules
+  if (["preparing", "ready", "picked_up", "on_the_way", "delivered"].includes(order.status)) {
+    return c.json({ error: "Order cannot be cancelled at this stage." }, 400);
+  }
+
+  if (order.status === "cancelled") {
+    return c.json({ error: "Order is already cancelled." }, 400);
+  }
+
+  // 3. Perform cancellation
+  const { data, error } = await sb
+    .from("orders")
+    .update({ status: "cancelled", updated_at: new Date().toISOString() })
+    .eq("id", id)
+    .select("id, status")
+    .single();
+
+  if (error || !data) return c.json({ error: "Cancellation failed" }, 500);
+  
+  // NOTE: In a real app with payments, we'd also trigger a Razorpay refund here for non-COD orders.
+
+  return c.json({ data });
+});

@@ -54,6 +54,17 @@ export function usePlaceOrder() {
   });
 }
 
+export function useCancelOrder(orderId: string) {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: () => api.orders.cancel(orderId),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["order", orderId] });
+      qc.invalidateQueries({ queryKey: ["orders"] });
+    },
+  });
+}
+
 /* ─── Profile Hooks ────────────────────────────────────────────────────── */
 
 export function useProfile() {
