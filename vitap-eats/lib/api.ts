@@ -29,9 +29,13 @@ async function req<T>(path: string, init: RequestInit = {}): Promise<T> {
 
 export const api = {
   restaurants: {
-    list: (cuisine?: string, page = 1) => {
+    list: (cuisine?: string, page = 1, lat?: number, lng?: number) => {
       const params = new URLSearchParams({ page: String(page) });
       if (cuisine && cuisine !== "all") params.set("cuisine", cuisine);
+      if (lat !== undefined && lng !== undefined) {
+        params.set("lat", String(lat));
+        params.set("lng", String(lng));
+      }
       return req<any[]>(`/api/restaurants?${params}`);
     },
     get: (slug: string) => req<any>(`/api/restaurants/${slug}`),
@@ -60,4 +64,33 @@ export const api = {
         req<any>("/api/profile/addresses", { method: "POST", body: JSON.stringify(payload) }),
     },
   },
-};
+  favorites: {
+    list: () => req<any[]>("/api/favorites"),
+    add: (restaurant_id: string) => req<any>("/api/favorites", { method: "POST", body: JSON.stringify({ restaurant_id }) }),
+    remove: (restaurant_id: string) => req<any>(`/api/favorites/${restaurant_id}`, { method: "DELETE" }),
+  },
+  coupons: {
+    validate: (code: string, order_subtotal: number) =>
+      req<{ coupon_id: string; code: string; description: string; discount_amount: number }>(
+        "/api/coupons/validate",
+        { method: "POST", body: JSON.stringify({ code, order_subtotal }) }
+      ),
+  },
+  payments: {
+    calculate: (payload: { restaurant_id: string; items: { menu_item_id: string; quantity: number }[]; coupon_code?: string }) =>
+      req<{ subtotal: number; delivery_fee: number; platform_fee: number; discount: number; total: number; coupon_error: string | null }>(
+        "/api/payments/calculate",
+        { method: "POST", body: JSON.stringify(payload) }
+      ),
+    createOrder: (payload: { restaurant_id: string; items: { menu_item_id: string; quantity: number }[]; coupon_code?: string }) =>
+      req<{ razorpay_order_id: string; amount: number; currency: string; key_id: string; bill: any }>(
+        "/api/payments/create-order",
+        { method: "POST", body: JSON.stringify(payload) }
+      ),
+    verify: (payload: any) =>
+      req<{ id: string; status: string; total: number }>(
+        "/api/payments/verify",
+        { method: "POST", body: JSON.stringify(payload) }
+      ),
+  },
+}

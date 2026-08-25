@@ -7,6 +7,7 @@ import RestaurantCard from "@/components/customer/RestaurantCard";
 import { Badge } from "@/components/ui/Badge";
 import { RestaurantGridSkeleton, Skeleton } from "@/components/ui/Skeleton";
 import { useRestaurants } from "@/lib/hooks";
+import { useLocationStore } from "@/lib/store/location";
 
 const CUISINES = [
   { id: "all",      label: "All",        emoji: "🍽️" },
@@ -29,7 +30,12 @@ const TOP_DISHES = [
 
 export default function HomePage() {
   const [activeCuisine, setActiveCuisine] = useState("all");
-  const { data: restaurants, isLoading, isError } = useRestaurants(activeCuisine);
+  const { lat, lng, label } = useLocationStore();
+  const { data: restaurants, isLoading, isError } = useRestaurants(
+    activeCuisine === "all" ? undefined : activeCuisine,
+    lat,
+    lng
+  );
 
   return (
     <div className="min-h-screen">
@@ -42,10 +48,10 @@ export default function HomePage() {
         <div className="absolute bottom-0 left-0 w-48 h-48 rounded-full opacity-10 bg-white -translate-x-8 translate-y-8" />
         <div className="relative max-w-[1280px] mx-auto px-4 md:px-10">
           <div className="max-w-xl">
-            <div className="inline-flex items-center gap-1.5 bg-white/20 text-white text-sm px-3 py-1.5 rounded-[--radius-full] mb-4 backdrop-blur-sm">
-              <MapPin size={14} />
-              <span>VIT-AP Campus, Amaravati</span>
-              <ChevronRight size={14} className="opacity-70" />
+            <div className="inline-flex items-center gap-1.5 bg-white/20 text-white text-sm px-3 py-1.5 rounded-[--radius-full] mb-4 backdrop-blur-sm truncate max-w-[250px]">
+              <MapPin size={14} className="shrink-0" />
+              <span className="truncate">{label}</span>
+              <ChevronRight size={14} className="opacity-70 shrink-0" />
             </div>
             <h1 className="text-3xl md:text-5xl font-extrabold text-white mb-3 leading-tight" style={{ fontFamily: "var(--font-heading)" }}>
               Hungry? <br className="sm:hidden" />

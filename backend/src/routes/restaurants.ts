@@ -6,19 +6,35 @@ import type { Env } from "../types/env";
 
 export const restaurantsRouter = new Hono<{ Bindings: Env }>();
 
-// GET /api/restaurants — list all open restaurants with optional cuisine filter
+// GET /api/restaurants — list all open restaurants with optional cuisine filter and location sorting
 restaurantsRouter.get("/", async (c) => {
-  const { cuisine, page = "1" } = c.req.query();
+  const { cuisine, page = "1", lat, lng } = c.req.query();
   const limit = 20;
   const offset = (parseInt(page) - 1) * limit;
 
   const sb = makeSupabase(c.env);
-  let query = sb
-    .from("restaurants")
-    .select("id, slug, name, cuisine, rating, delivery_time_min, delivery_fee, min_order, image_url, is_open, discount_label")
+  let query;
+
+  if (lat && lng) {
+    // PostGIS distance sorting
+    query = sb.rpc("nearby_restaurants", { 
+      user_lat: parseFloat(lat), 
+      user_lng: parseFloat(lng) 
+    });
+  } else {
+    // Standard listing
+    query = sb.from("restaurants").select("id, slug, name, cuisine, rating, delivery_time_min, delivery_fee, min_order, image_url, is_open, discount_label");
+  }
+
+  // Common filters and pagination
+  query = query
     .eq("is_open", true)
-    .range(offset, offset + limit - 1)
-    .order("rating", { ascending: false });
+    .range(offset, offset + limit - 1);
+
+  // If NOT using PostGIS (which handles ordering inside the RPC), sort by rating
+  if (!lat || !lng) {
+    query = query.order("rating", { ascending: false });
+  }
 
   if (cuisine) query = query.contains("cuisine", [cuisine]);
 

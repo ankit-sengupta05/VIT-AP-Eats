@@ -3,11 +3,11 @@ import { api } from "@/lib/api";
 
 /* ─── Restaurant Hooks ─────────────────────────────────────────────────── */
 
-export function useRestaurants(cuisine?: string) {
+export function useRestaurants(cuisine?: string, lat?: number, lng?: number) {
   return useQuery({
-    queryKey: ["restaurants", cuisine ?? "all"],
-    queryFn: () => api.restaurants.list(cuisine),
-    staleTime: 2 * 60 * 1000, // 2 min — restaurants don't change every second
+    queryKey: ["restaurants", cuisine ?? "all", lat, lng],
+    queryFn: () => api.restaurants.list(cuisine, 1, lat, lng),
+    staleTime: 2 * 60 * 1000, // 2 min
   });
 }
 
@@ -71,5 +71,53 @@ export function useAddresses() {
     queryFn: api.profile.addresses.list,
     staleTime: 5 * 60 * 1000,
     retry: false,
+  });
+}
+
+/* ─── Favorites Hooks ──────────────────────────────────────────────────── */
+
+export function useFavorites() {
+  return useQuery({
+    queryKey: ["favorites"],
+    queryFn: api.favorites.list,
+    staleTime: 5 * 60 * 1000,
+    retry: false,
+  });
+}
+
+export function useAddFavorite() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: api.favorites.add,
+    onMutate: async (restaurantId) => {
+      // Optimistic update
+      await qc.cancelQueries({ queryKey: ["favorites"] });
+      const previous = qc.getQueryData(["favorites"]);
+      // Add a dummy entry so the UI reacts instantly
+      qc.setQueryData(["favorites"], (old: any) => [...(old || []), { id: "temp", restaurant_id: restaurantId }]);
+      return { previous };
+    },
+    onError: (err, variables, context) => {
+      if (context?.previous) qc.setQueryData(["favorites"], context.previous);
+    },
+    onSettled: () => qc.invalidateQueries({ queryKey: ["favorites"] }),
+  });
+}
+
+export function useRemoveFavorite() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: api.favorites.remove,
+    onMutate: async (restaurantId) => {
+      // Optimistic update
+      await qc.cancelQueries({ queryKey: ["favorites"] });
+      const previous = qc.getQueryData(["favorites"]);
+      qc.setQueryData(["favorites"], (old: any) => (old || []).filter((f: any) => f.restaurant_id !== restaurantId && f.id !== restaurantId));
+      return { previous };
+    },
+    onError: (err, variables, context) => {
+      if (context?.previous) qc.setQueryData(["favorites"], context.previous);
+    },
+    onSettled: () => qc.invalidateQueries({ queryKey: ["favorites"] }),
   });
 }

@@ -7,6 +7,9 @@ import type { Env } from "./types/env";
 import { restaurantsRouter } from "./routes/restaurants";
 import { ordersRouter } from "./routes/orders";
 import { profilesRouter } from "./routes/profiles";
+import { favoritesRouter } from "./routes/favorites";
+import { couponsRouter } from "./routes/coupons";
+import { paymentsRouter } from "./routes/payments";
 
 const app = new Hono<{ Bindings: Env }>();
 
@@ -33,6 +36,9 @@ app.get("/api/health", (c) =>
 app.route("/api/restaurants", restaurantsRouter);
 app.route("/api/orders",      ordersRouter);
 app.route("/api/profile",     profilesRouter);
+app.route("/api/favorites",   favoritesRouter);
+app.route("/api/coupons",     couponsRouter);
+app.route("/api/payments",    paymentsRouter);
 
 // ── Global error handler ───────────────────────────────────────────────────
 app.onError((err, c) => {
