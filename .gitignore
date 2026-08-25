@@ -13,6 +13,11 @@
 *.cert
 secrets/
 
+# ── Database schema (keep internal) ───────────────────────────────
+supabase/
+*.sql
+
+
 # ── Dependencies ──────────────────────────────────────────────────
 node_modules/
 .pnp
