@@ -1,0 +1,90 @@
+@import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap');
+@import "../styles/tokens.css";
+@import "tailwindcss";
+
+/* ---- Tailwind v4 theme bridge ---- */
+@theme inline {
+  --color-primary:        var(--color-primary);
+  --color-primary-dark:   var(--color-primary-dark);
+  --color-secondary:      var(--color-secondary);
+  --color-tertiary:       var(--color-tertiary);
+  --color-success:        var(--color-success);
+  --color-warning:        var(--color-warning);
+  --color-danger:         var(--color-danger);
+  --color-error:          var(--color-error);
+  --color-bg:             var(--color-bg);
+  --color-surface:        var(--color-surface);
+  --color-on-surface:     var(--color-on-surface);
+  --color-on-surface-variant: var(--color-on-surface-variant);
+  --color-border:         var(--color-border);
+  --color-outline:        var(--color-outline);
+  --color-outline-variant: var(--color-outline-variant);
+  --color-surface-container: var(--color-surface-container);
+  --color-surface-container-low: var(--color-surface-container-low);
+  --color-surface-container-lowest: var(--color-surface-container-lowest);
+  --color-surface-container-high: var(--color-surface-container-high);
+  --color-surface-container-highest: var(--color-surface-container-highest);
+  --color-on-primary:     var(--color-on-primary);
+  --color-primary-container: var(--color-primary-container);
+  --color-primary-fixed:  var(--color-primary-fixed);
+  --color-tertiary-container: var(--color-tertiary-container);
+  --color-on-tertiary-container: var(--color-on-tertiary-container);
+  --color-error-container: var(--color-error-container);
+
+  --font-heading:         var(--font-heading);
+  --font-body:            var(--font-body);
+
+  --radius-sm:    var(--radius-sm);
+  --radius-md:    var(--radius-md);
+  --radius-lg:    var(--radius-lg);
+  --radius-xl:    var(--radius-xl);
+  --radius-full:  var(--radius-full);
+
+  --shadow-sm:      var(--shadow-sm);
+  --shadow-md:      var(--shadow-md);
+  --shadow-lg:      var(--shadow-lg);
+  --shadow-xl:      var(--shadow-xl);
+  --shadow-primary: var(--shadow-primary);
+}
+
+/* ---- Base styles ---- */
+*, *::before, *::after { box-sizing: border-box; }
+
+html { scroll-behavior: smooth; }
+
+body {
+  background-color: var(--color-bg);
+  color: var(--color-on-surface);
+  font-family: var(--font-body);
+  font-size: var(--text-base);
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-heading);
+  font-weight: 700;
+  line-height: 1.2;
+  letter-spacing: -0.01em;
+}
+
+/* ---- Utilities ---- */
+.hide-scrollbar::-webkit-scrollbar { display: none; }
+.hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+/* Tabular numbers for prices/ETAs */
+.tabular-nums { font-variant-numeric: tabular-nums; }
+
+/* Focus ring using primary color */
+:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+  border-radius: var(--radius-sm);
+}
+
+/* Smooth transitions on interactive elements */
+button, a, [role="button"] {
+  transition: opacity 0.15s ease, transform 0.1s ease, box-shadow 0.15s ease;
+}
+button:active, [role="button"]:active { transform: scale(0.97); }
