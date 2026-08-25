@@ -94,4 +94,19 @@ export const api = {
         { method: "POST", body: JSON.stringify(payload) }
       ),
   },
+  partner: {
+    dashboard: () => req<any>("/api/partner/dashboard"),
+    setStatus: (is_online: boolean) =>
+      req<any>("/api/partner/status", { method: "PATCH", body: JSON.stringify({ is_online }) }),
+    broadcastLocation: (payload: { lat: number; lng: number; heading?: number; speed?: number }) =>
+      req<any>("/api/partner/location", { method: "POST", body: JSON.stringify(payload) }),
+    getPending: () => req<any>("/api/partner/pending"),
+    acceptOrder: (id: string) =>
+      req<any>(`/api/partner/orders/${id}/accept`, { method: "POST" }),
+    rejectOrder: (id: string) =>
+      req<any>(`/api/partner/orders/${id}/reject`, { method: "POST" }),
+    advanceOrder: (id: string) =>
+      req<any>(`/api/partner/orders/${id}/advance`, { method: "POST" }),
+    earnings: () => req<any[]>("/api/partner/earnings"),
+  },
 }

@@ -10,6 +10,7 @@ import { profilesRouter } from "./routes/profiles";
 import { favoritesRouter } from "./routes/favorites";
 import { couponsRouter } from "./routes/coupons";
 import { paymentsRouter } from "./routes/payments";
+import { partnerRouter } from "./routes/partner";
 
 const app = new Hono<{ Bindings: Env }>();
 
@@ -39,6 +40,7 @@ app.route("/api/profile",     profilesRouter);
 app.route("/api/favorites",   favoritesRouter);
 app.route("/api/coupons",     couponsRouter);
 app.route("/api/payments",    paymentsRouter);
+app.route("/api/partner",     partnerRouter);
 
 // ── Global error handler ───────────────────────────────────────────────────
 app.onError((err, c) => {
