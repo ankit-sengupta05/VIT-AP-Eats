@@ -67,4 +67,10 @@ const nextConfig: NextConfig = {
   },
 };
 
-export default withPWA(nextConfig);
+import { withSentryConfig } from "@sentry/nextjs";
+
+export default withSentryConfig(withPWA(nextConfig), {
+  org: "vit-ap-eats",
+  project: "frontend",
+  silent: true,
+});

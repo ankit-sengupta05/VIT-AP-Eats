@@ -3,6 +3,7 @@ import { cors } from "hono/cors";
 import { logger } from "hono/logger";
 import { prettyJSON } from "hono/pretty-json";
 import { HTTPException } from "hono/http-exception";
+import { sentry } from "@hono/sentry";
 import type { Env } from "./types/env";
 import { restaurantsRouter } from "./routes/restaurants";
 import { ordersRouter } from "./routes/orders";
@@ -16,6 +17,7 @@ import { adminRouter } from "./routes/admin";
 const app = new Hono<{ Bindings: Env }>();
 
 // ── Global middleware ──────────────────────────────────────────────────────
+app.use("*", sentry());
 app.use("*", logger());
 app.use("*", prettyJSON());
 app.use("*", cors({
@@ -47,7 +49,11 @@ app.route("/api/admin",       adminRouter);
 // ── Global error handler ───────────────────────────────────────────────────
 app.onError((err, c) => {
   if (err instanceof HTTPException) return err.getResponse();
+  
   console.error("[Worker Error]", err);
+  const sentry = c.get("sentry");
+  if (sentry) sentry.captureException(err);
+  
   return c.json({ error: "Internal server error" }, 500);
 });
 

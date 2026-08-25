@@ -7,7 +7,9 @@
     "cf-typegen": "wrangler types --env-interface CloudflareBindings"
   },
   "dependencies": {
+    "@hono/sentry": "^1.2.2",
     "@hono/zod-validator": "^0.9.0",
+    "@sentry/cloudflare": "^10.71.0",
     "@supabase/supabase-js": "^2.112.4",
     "hono": "^4.13.4",
     "zod": "^4.4.3"

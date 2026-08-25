@@ -1,0 +1,32 @@
+config:
+  target: "https://vitap-eats-api.your-worker.workers.dev"
+  phases:
+    - duration: 60
+      arrivalRate: 5
+      name: Warm up
+    - duration: 120
+      arrivalRate: 10
+      rampTo: 50
+      name: Ramp up load
+    - duration: 300
+      arrivalRate: 50
+      name: Sustained peak load
+  environments:
+    production:
+      target: "https://vitap-eats-api.your-worker.workers.dev"
+  payload:
+    # Use a CSV file with valid mock user JWTs if you need authenticated load testing
+    # path: "users.csv"
+    # fields:
+    #   - "token"
+
+scenarios:
+  - name: "Browse Restaurants & Health Check"
+    flow:
+      - get:
+          url: "/api/health"
+      - get:
+          url: "/api/restaurants"
+      - think: 2
+      - get:
+          url: "/api/restaurants/123e4567-e89b-12d3-a456-426614174000" # Replace with valid restaurant ID
