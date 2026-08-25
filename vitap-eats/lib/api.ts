@@ -1,6 +1,8 @@
 // All keys from process.env — loaded from ../.env via dotenv-cli at runtime.
 // NEVER hardcode values here. This file only reads from environment variables.
 
+import { createClient } from "./supabase/client";
+
 const BASE = process.env.NEXT_PUBLIC_API_URL;
 
 if (!BASE && typeof window !== "undefined") {
@@ -11,10 +13,13 @@ async function req<T>(path: string, init: RequestInit = {}): Promise<T> {
   const headers = new Headers(init.headers);
   headers.set("Content-Type", "application/json");
 
-  // Attach Supabase session token when available (set by auth flow in Phase 2)
-  const token =
-    typeof window !== "undefined" ? localStorage.getItem("sb-access-token") : null;
-  if (token) headers.set("Authorization", `Bearer ${token}`);
+  if (typeof window !== "undefined") {
+    const supabase = createClient();
+    const { data: { session } } = await supabase.auth.getSession();
+    if (session?.access_token) {
+      headers.set("Authorization", `Bearer ${session.access_token}`);
+    }
+  }
 
   const res = await fetch(`${BASE}${path}`, { ...init, headers });
   const json = await res.json();

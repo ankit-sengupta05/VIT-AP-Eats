@@ -11,7 +11,8 @@ export const rupees = (amount: number) =>
   new Intl.NumberFormat("en-IN", { style: "currency", currency: "INR", maximumFractionDigits: 0 }).format(amount);
 
 /** Debounce — returns a function that delays invoking fn by ms */
-export function debounce<T extends (...args: unknown[]) => void>(fn: T, ms: number) {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export function debounce<T extends (...args: any[]) => void>(fn: T, ms: number) {
   let timer: ReturnType<typeof setTimeout>;
   return (...args: Parameters<T>) => {
     clearTimeout(timer);

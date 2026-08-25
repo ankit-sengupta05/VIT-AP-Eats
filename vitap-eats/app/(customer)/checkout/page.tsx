@@ -5,7 +5,7 @@ import { rupees, cn } from "@/lib/utils";
 import { MapPin, CreditCard, Wallet, ChevronLeft, ArrowRight, ShieldCheck, Loader2 } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Skeleton } from "@/components/ui/Skeleton";
 
 const DELIVERY_FEE = 30;
@@ -22,10 +22,11 @@ export default function CheckoutPage() {
   const { data: addresses = [], isLoading: addrLoading } = useAddresses();
   const { mutate: placeOrder, isPending } = usePlaceOrder();
 
-  if (count() === 0) {
-    router.push("/cart");
-    return null;
-  }
+  useEffect(() => {
+    if (count() === 0) router.push("/cart");
+  }, [count, router]);
+
+  if (count() === 0) return null;
 
   const restaurantId = items[0]?.restaurantId;
 

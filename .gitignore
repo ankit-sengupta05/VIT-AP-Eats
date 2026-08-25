@@ -14,7 +14,7 @@
 secrets/
 
 # ── Database schema (keep internal) ───────────────────────────────
-supabase/
+/supabase/
 *.sql
 
 

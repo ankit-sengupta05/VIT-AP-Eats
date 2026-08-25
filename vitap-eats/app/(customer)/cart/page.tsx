@@ -5,8 +5,8 @@ import { Plus, Minus, Trash2, ShoppingCart, ArrowRight } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
 
-const DELIVERY_FEE = 30;
-const PLATFORM_FEE = 5;
+const DELIVERY_FEE: number = 30;
+const PLATFORM_FEE: number = 5;
 
 export default function CartPage() {
   const { items, update, remove, total, count } = useCartStore();
