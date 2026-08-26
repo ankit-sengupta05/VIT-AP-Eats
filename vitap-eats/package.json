@@ -10,9 +10,9 @@
     "generate-icons": "node scripts/generate-icons.js",
     "sync-env": "node scripts/sync-env.js",
     "audit-ci": "npm audit --audit-level=critical",
-    "preview": "opennextjs-cloudflare build && opennextjs-cloudflare preview",
-    "deploy": "opennextjs-cloudflare build && opennextjs-cloudflare deploy",
-    "cf-typegen": "wrangler types --env-interface CloudflareEnv"
+    "preview": "npx opennextjs-cloudflare build && npx opennextjs-cloudflare preview",
+    "deploy": "npx opennextjs-cloudflare build && npx opennextjs-cloudflare deploy",
+    "cf-typegen": "npx wrangler types --env-interface CloudflareEnv"
   },
   "dependencies": {
     "@ducanh2912/next-pwa": "^10.2.9",
@@ -33,7 +33,7 @@
     "framer-motion": "^13.1.1",
     "leaflet": "^1.9.4",
     "lucide-react": "^1.34.0",
-    "next": "16.3.3",
+    "next": "16.3.2",
     "react": "19.2.8",
     "react-dom": "19.2.8",
     "react-hook-form": "^7.86.0",
@@ -45,7 +45,6 @@
     "zustand": "^5.0.15"
   },
   "devDependencies": {
-    "@opennextjs/cloudflare": "^1.20.3",
     "@tailwindcss/postcss": "^4",
     "@types/leaflet": "^1.9.22",
     "@types/node": "^20",
@@ -53,10 +52,9 @@
     "@types/react-dom": "^19",
     "dotenv-cli": "^11.0.0",
     "eslint": "^9",
-    "eslint-config-next": "16.3.3",
+    "eslint-config-next": "16.3.2",
     "sharp": "^0.35.3",
     "tailwindcss": "^4",
-    "typescript": "^5",
-    "wrangler": "^4.126.0"
+    "typescript": "^5"
   }
 }
