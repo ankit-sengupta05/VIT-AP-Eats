@@ -106,7 +106,6 @@ export async function proxy(request: NextRequest) {
 }
 
 export const config = {
-  runtime: "edge",
   matcher: [
     /*
      * Match all request paths except for the ones starting with:
