@@ -1,0 +1,29 @@
+{
+  "packageId": "com.vitapeats.app",
+  "host": "vitap-eats.pages.dev",
+  "name": "VIT-AP Eats",
+  "launcherName": "VIT-AP Eats",
+  "display": "standalone",
+  "themeColor": "#f38020",
+  "navigationColor": "#ffffff",
+  "navigationColorDark": "#000000",
+  "navigationDividerColor": "#000000",
+  "navigationDividerColorDark": "#000000",
+  "backgroundColor": "#ffffff",
+  "enableNotifications": true,
+  "startUrl": "/",
+  "iconUrl": "file://icon.png",
+  "maskableIconUrl": "file://icon.png",
+  "splashScreenFadeOutDuration": 300,
+  "signingKey": {
+    "path": "./android.keystore",
+    "alias": "android"
+  },
+  "appVersionName": "1.0.0",
+  "appVersionCode": 1,
+  "shortcuts": [],
+  "generatorApp": "bubblewrap-cli",
+  "webManifestUrl": "https://vitap-eats.pages.dev/manifest.json",
+  "fallbackType": "customtabs",
+  "features": {}
+}
