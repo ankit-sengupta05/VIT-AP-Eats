@@ -40,7 +40,7 @@ export function OfflineBanner() {
       {isOffline ? (
         <>
           <WifiOff size={16} />
-          You're offline — some features may be unavailable
+          You&apos;re offline — some features may be unavailable
         </>
       ) : (
         <>
