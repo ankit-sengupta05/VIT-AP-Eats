@@ -380,7 +380,7 @@ export default function PartnerDashboardPage() {
 
         {/* Today's Stats */}
         <div>
-          <h2 className="text-base font-bold text-[--color-on-surface] mb-3" style={{ fontFamily: "var(--font-heading)" }}>Today's Summary</h2>
+          <h2 className="text-base font-bold text-[--color-on-surface] mb-3" style={{ fontFamily: "var(--font-heading)" }}>Today&apos;s Summary</h2>
           <div className="grid grid-cols-2 gap-3">
             {stats.map(({ label, value, icon: Icon, color }) => (
               <div key={label} className="bg-[--color-surface-container-lowest] rounded-[--radius-lg] shadow-[--shadow-sm] p-4 border border-[--color-border]">
@@ -473,7 +473,7 @@ export default function PartnerDashboardPage() {
             </div>
             <p className="font-bold text-[--color-on-surface]" style={{ fontFamily: "var(--font-heading)" }}>Waiting for orders...</p>
             <p className="text-sm text-[--color-on-surface-variant] text-center max-w-xs">
-              You'll be notified the moment a delivery request arrives nearby.
+              You&apos;ll be notified the moment a delivery request arrives nearby.
             </p>
           </div>
         ) : null}
