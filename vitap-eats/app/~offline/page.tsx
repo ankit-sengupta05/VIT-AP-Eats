@@ -15,10 +15,10 @@ export default function OfflinePage() {
       <div>
         <h1 className="text-2xl font-extrabold text-[--color-on-surface] mb-2"
           style={{ fontFamily: "var(--font-heading)" }}>
-          You're Offline
+          You&apos;re Offline
         </h1>
         <p className="text-[--color-on-surface-variant] text-sm max-w-xs">
-          It looks like you don't have a network connection. Check your Wi-Fi or mobile data and try again.
+          It looks like you don&apos;t have a network connection. Check your Wi-Fi or mobile data and try again.
         </p>
       </div>
 
