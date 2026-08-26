@@ -59,43 +59,9 @@ jobs:
           workingDirectory: ./backend
           command: deploy
 
-  deploy-frontend:
-    name: Deploy PWA to Cloudflare Pages
-    needs: validate
-    if: github.ref == 'refs/heads/main'
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: 22
-          cache: "npm"
-          cache-dependency-path: "./vitap-eats/package-lock.json"
-
-      - name: Install dependencies (Frontend)
-        working-directory: ./vitap-eats
-        run: npm ci
-
-      - name: Build Next.js App
-        working-directory: ./vitap-eats
-        env:
-          NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
-          NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
-          NEXT_PUBLIC_API_URL: https://vitap-eats-api.your-worker.workers.dev
-          NEXT_PUBLIC_RAZORPAY_KEY_ID: ${{ secrets.RAZORPAY_KEY_ID }}
-        run: |
-          # Generate icons
-          npm run generate-icons || true
-          npm run build
-
-      - name: Deploy to Cloudflare Pages
-        uses: cloudflare/pages-action@v1
-        with:
-          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          projectName: vitap-eats
-          directory: ./vitap-eats/.next
-          branch: main
+  # Note: the frontend (vitap-eats) is deployed automatically by Cloudflare's
+  # own Git integration for the "vit-ap-eats" Workers project on every push
+  # to main — no separate GitHub Actions deploy step needed here. There used
+  # to be a `deploy-frontend` job using `cloudflare/pages-action@v1`, but
+  # that targeted a legacy Cloudflare Pages project that no longer exists
+  # now that this app deploys via Cloudflare Workers + OpenNext instead.
