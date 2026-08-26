@@ -1,5 +1,5 @@
 "use client";
-import { useState, useCallback } from "react";
+import { useState, useMemo } from "react";
 import { Search, X, Clock, ChevronDown } from "lucide-react";
 import RestaurantCard from "@/components/customer/RestaurantCard";
 import { RestaurantGridSkeleton } from "@/components/ui/Skeleton";
@@ -24,7 +24,7 @@ export default function SearchPage() {
 
   // Debounce the search query state update
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  const handleInput = useCallback(debounce((v: string) => setQuery(v), 300), []);
+  const handleInput = useMemo(() => debounce((v: string) => setQuery(v), 300), []);
 
   const filtered = restaurants
     .filter((r: any) => {
