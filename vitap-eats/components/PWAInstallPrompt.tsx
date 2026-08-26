@@ -101,7 +101,7 @@ export function PWAInstallPrompt() {
           </button>
         </div>
         <p className="text-sm text-gray-600 mb-3">
-          To install on iOS, tap the <strong>Share</strong> icon (📤) in Safari and then tap <strong>"Add to Home Screen"</strong>.
+          To install on iOS, tap the <strong>Share</strong> icon (📤) in Safari and then tap <strong>&quot;Add to Home Screen&quot;</strong>.
         </p>
         <div className="flex items-center gap-3 bg-gray-50 rounded-xl px-4 py-3 text-sm">
           <span className="text-xl">📤</span>
