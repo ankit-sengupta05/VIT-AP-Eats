@@ -9,7 +9,7 @@ export interface Restaurant {
   id: string;
   slug: string;
   name: string;
-  cuisine: string[];
+  cuisine: string;
   rating: number;
   deliveryTime: number;        // minutes
   deliveryFee: number;         // 0 = free
@@ -34,7 +34,7 @@ export default function RestaurantCard({ r }: { r: Restaurant }) {
     if (isFavorited) {
       removeFavorite(r.id);
     } else {
-      addFavorite(r.id);
+      addFavorite({ restaurant_id: r.id });
     }
   };
 
@@ -92,7 +92,7 @@ export default function RestaurantCard({ r }: { r: Restaurant }) {
         </div>
 
         <p className="text-[--color-on-surface-variant] text-xs mb-2 line-clamp-1">
-          {r.cuisine.join(" · ")}
+          {r.cuisine}
         </p>
 
         {/* Stats row */}

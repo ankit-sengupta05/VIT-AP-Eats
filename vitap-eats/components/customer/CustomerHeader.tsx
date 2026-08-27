@@ -73,9 +73,9 @@ export default function CustomerHeader() {
               <div className="ml-1 relative group">
                 <button className="flex items-center gap-2 pl-2 pr-4 py-1.5 rounded-[--radius-full] border border-[--color-border] hover:bg-[--color-surface-container-low] transition-colors">
                   <span className="w-6 h-6 rounded-full text-white text-xs font-bold flex items-center justify-center uppercase" style={{ background: "var(--color-tertiary)" }}>
-                    {user.user_metadata?.full_name?.[0] ?? "U"}
+                    {user.displayName?.[0] ?? "U"}
                   </span>
-                  <span className="text-sm font-semibold max-w-[100px] truncate">{user.user_metadata?.full_name ?? "User"}</span>
+                  <span className="text-sm font-semibold max-w-[100px] truncate">{user.displayName ?? "User"}</span>
                 </button>
                 
                 <div className="absolute right-0 top-full mt-2 w-48 bg-[--color-surface-container-lowest] border border-[--color-border] rounded-[--radius-md] shadow-[--shadow-lg] py-1 opacity-0 pointer-events-none group-hover:opacity-100 group-hover:pointer-events-auto transition-opacity z-50">

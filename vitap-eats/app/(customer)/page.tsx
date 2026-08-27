@@ -177,9 +177,9 @@ export default function HomePage() {
               {restaurants.map((r) => <RestaurantCard key={r.id} r={{
                 id: r.id, slug: r.slug, name: r.name,
                 cuisine: r.cuisine, rating: r.rating,
-                deliveryTime: r.delivery_time_min, deliveryFee: r.delivery_fee,
-                minOrder: r.min_order, image: r.image_url, isOpen: r.is_open,
-                isVeg: r.is_veg_only, discount: r.discount_label,
+                deliveryTime: r.deliveryTime, deliveryFee: r.deliveryFee,
+                minOrder: 0, image: r.imageUrl, isOpen: r.isOpen,
+                isVeg: r.isVeg, discount: undefined,
               }} />)}
             </div>
           )}

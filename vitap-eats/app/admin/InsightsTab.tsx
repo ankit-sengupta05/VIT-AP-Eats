@@ -1,26 +1,51 @@
 import { useState, useEffect } from "react";
-import { api } from "@/lib/api";
 import { Loader2, TrendingUp, ShoppingBag, ArrowRight } from "lucide-react";
 import { rupees } from "@/lib/utils";
+import { subscribeToAllOrders, type Order } from "@/lib/db/orders";
 
 export function InsightsTab() {
-  const [data, setData] = useState<{ daily_stats: any[]; top_dishes: any[] } | null>(null);
+  const [orders, setOrders] = useState<Order[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    api.admin.insights().then(setData).finally(() => setIsLoading(false));
+    const unsub = subscribeToAllOrders((data) => {
+      setOrders(data);
+      setIsLoading(false);
+    });
+    return () => unsub();
   }, []);
 
   if (isLoading) {
     return <div className="py-20 flex justify-center"><Loader2 size={32} className="animate-spin text-gray-400" /></div>;
   }
 
-  if (!data) return null;
+  // Generate basic daily stats from orders (last 7 days for demo)
+  const today = new Date();
+  const daily_stats = Array.from({ length: 7 }).map((_, i) => {
+    const d = new Date(today);
+    d.setDate(d.getDate() - i);
+    const dateStr = d.toLocaleDateString("en-IN", { month: "short", day: "numeric" });
+    const dayOrders = orders.filter(o => o.createdAt?.toDate && o.createdAt.toDate().toDateString() === d.toDateString());
+    return {
+      day: d.toISOString(),
+      dateStr,
+      revenue: dayOrders.reduce((acc, o) => acc + (o.total || 0), 0),
+      total_orders: dayOrders.length,
+    };
+  }).reverse();
 
-  const { daily_stats, top_dishes } = data;
-  
   // Calculate max revenue for bar chart scaling
   const maxRev = Math.max(...daily_stats.map(s => s.revenue || 0), 1000);
+
+  // Top dishes
+  const itemCounts: Record<string, { name: string; count: number; restaurant: string }> = {};
+  orders.forEach(o => {
+    o.items?.forEach(i => {
+      if (!itemCounts[i.menuItemId]) itemCounts[i.menuItemId] = { name: i.name, count: 0, restaurant: o.restaurantName };
+      itemCounts[i.menuItemId].count += i.quantity;
+    });
+  });
+  const top_dishes = Object.values(itemCounts).sort((a, b) => b.count - a.count).slice(0, 5);
 
   return (
     <div className="space-y-6">
@@ -32,13 +57,12 @@ export function InsightsTab() {
         <div className="lg:col-span-2 bg-[--color-surface-container-lowest] rounded-[--radius-lg] shadow-[--shadow-sm] border border-[--color-border] p-5">
           <div className="flex items-center gap-2 mb-6">
             <TrendingUp size={18} className="text-[--color-primary]" />
-            <h3 className="font-bold text-gray-800">30-Day Revenue</h3>
+            <h3 className="font-bold text-gray-800">7-Day Revenue</h3>
           </div>
           
           <div className="h-64 flex items-end gap-2 overflow-x-auto hide-scrollbar pb-2">
-            {daily_stats.slice().reverse().map((stat, i) => {
+            {daily_stats.map((stat, i) => {
               const h = ((stat.revenue || 0) / maxRev) * 100;
-              const dateStr = new Date(stat.day).toLocaleDateString("en-IN", { month: "short", day: "numeric" });
               return (
                 <div key={i} className="group relative flex flex-col items-center justify-end h-full min-w-[32px] flex-1">
                   {/* Tooltip */}
@@ -52,9 +76,9 @@ export function InsightsTab() {
                     className="w-full bg-[--color-primary-fixed] group-hover:bg-[--color-primary] rounded-t-sm transition-all" 
                     style={{ height: `${Math.max(h, 2)}%` }}
                   />
-                  {/* X-axis label (only show every few days to avoid clutter) */}
+                  {/* X-axis label */}
                   <span className="text-[9px] text-gray-400 mt-2 truncate w-full text-center">
-                    {i % 3 === 0 ? dateStr : ""}
+                    {stat.dateStr}
                   </span>
                 </div>
               );
@@ -66,7 +90,7 @@ export function InsightsTab() {
         <div className="bg-[--color-surface-container-lowest] rounded-[--radius-lg] shadow-[--shadow-sm] border border-[--color-border] p-5 flex flex-col">
           <div className="flex items-center gap-2 mb-4">
             <ShoppingBag size={18} className="text-[--color-tertiary]" />
-            <h3 className="font-bold text-gray-800">Top Dishes (All Time)</h3>
+            <h3 className="font-bold text-gray-800">Top Dishes</h3>
           </div>
 
           <div className="flex-1 overflow-y-auto space-y-3 pr-1 hide-scrollbar">
@@ -74,7 +98,7 @@ export function InsightsTab() {
               <p className="text-sm text-gray-400 text-center py-10">No order data yet</p>
             ) : (
               top_dishes.map((dish, i) => (
-                <div key={dish.id} className="flex items-center gap-3 group">
+                <div key={i} className="flex items-center gap-3 group">
                   <div className="w-6 h-6 rounded-full bg-gray-100 flex items-center justify-center text-xs font-bold text-gray-500 shrink-0">
                     {i + 1}
                   </div>
@@ -84,7 +108,7 @@ export function InsightsTab() {
                   </div>
                   <div className="text-right shrink-0">
                     <p className="text-sm font-bold text-gray-900 tabular-nums">{dish.count}</p>
-                    <p className="text-[10px] text-gray-400">orders</p>
+                    <p className="text-[10px] text-gray-400">sold</p>
                   </div>
                 </div>
               ))

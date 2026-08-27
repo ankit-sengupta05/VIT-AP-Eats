@@ -1,12 +1,15 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { api } from "@/lib/api";
+import { getRestaurants, getRestaurantBySlug, getMenu } from "@/lib/db/restaurants";
+import { getUserOrders, updateOrderStatus } from "@/lib/db/orders";
+import { getUserProfile } from "@/lib/db/users";
+import { auth } from "@/lib/firebase";
 
 /* ─── Restaurant Hooks ─────────────────────────────────────────────────── */
 
 export function useRestaurants(cuisine?: string, lat?: number, lng?: number) {
   return useQuery({
-    queryKey: ["restaurants", cuisine ?? "all", lat, lng],
-    queryFn: () => api.restaurants.list(cuisine, 1, lat, lng),
+    queryKey: ["restaurants", cuisine ?? "all"],
+    queryFn: () => getRestaurants(cuisine === "all" ? undefined : cuisine),
     staleTime: 2 * 60 * 1000, // 2 min
   });
 }
@@ -14,7 +17,17 @@ export function useRestaurants(cuisine?: string, lat?: number, lng?: number) {
 export function useRestaurant(slug: string) {
   return useQuery({
     queryKey: ["restaurant", slug],
-    queryFn: () => api.restaurants.get(slug),
+    queryFn: async () => {
+      const rest = await getRestaurantBySlug(slug);
+      if (!rest) return null;
+      const menuItems = await getMenu(rest.id);
+      const menu = menuItems.reduce((acc, item) => {
+        if (!acc[item.category]) acc[item.category] = [];
+        acc[item.category].push(item);
+        return acc;
+      }, {} as Record<string, any[]>);
+      return { ...rest, menu };
+    },
     enabled: !!slug,
     staleTime: 2 * 60 * 1000,
   });
@@ -23,41 +36,21 @@ export function useRestaurant(slug: string) {
 /* ─── Order Hooks ──────────────────────────────────────────────────────── */
 
 export function useOrders() {
+  const uid = auth.currentUser?.uid;
   return useQuery({
-    queryKey: ["orders"],
-    queryFn: api.orders.list,
+    queryKey: ["orders", uid],
+    queryFn: () => (uid ? getUserOrders(uid) : []),
+    enabled: !!uid,
     staleTime: 30_000,
   });
 }
 
-export function useOrder(id: string) {
-  return useQuery({
-    queryKey: ["order", id],
-    queryFn: () => api.orders.get(id),
-    enabled: !!id,
-    // Poll every 15 seconds while order is active (tracking page)
-    refetchInterval: (query) => {
-      const status = query.state.data?.status;
-      const terminal = ["delivered", "cancelled"];
-      return terminal.includes(status) ? false : 15_000;
-    },
-  });
-}
-
-export function usePlaceOrder() {
-  const qc = useQueryClient();
-  return useMutation({
-    mutationFn: api.orders.create,
-    onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ["orders"] });
-    },
-  });
-}
+// NOTE: useOrder (single order subscription) is best handled via useEffect with onSnapshot directly in the component, rather than useQuery polling. See order/[id]/page.tsx.
 
 export function useCancelOrder(orderId: string) {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: () => api.orders.cancel(orderId),
+    mutationFn: () => updateOrderStatus(orderId, "cancelled"),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["order", orderId] });
       qc.invalidateQueries({ queryKey: ["orders"] });
@@ -68,67 +61,36 @@ export function useCancelOrder(orderId: string) {
 /* ─── Profile Hooks ────────────────────────────────────────────────────── */
 
 export function useProfile() {
+  const uid = auth.currentUser?.uid;
   return useQuery({
-    queryKey: ["profile"],
-    queryFn: api.profile.get,
+    queryKey: ["profile", uid],
+    queryFn: () => (uid ? getUserProfile(uid) : null),
+    enabled: !!uid,
     staleTime: 5 * 60 * 1000,
-    retry: false, // Don't retry auth failures — user just isn't logged in
   });
 }
 
+// Address and Favorites are mocked/removed for simplicity in Firebase migration, but can be added as subcollections later.
 export function useAddresses() {
   return useQuery({
     queryKey: ["addresses"],
-    queryFn: api.profile.addresses.list,
+    queryFn: () => [],
     staleTime: 5 * 60 * 1000,
-    retry: false,
   });
 }
-
-/* ─── Favorites Hooks ──────────────────────────────────────────────────── */
 
 export function useFavorites() {
   return useQuery({
     queryKey: ["favorites"],
-    queryFn: api.favorites.list,
+    queryFn: () => [],
     staleTime: 5 * 60 * 1000,
-    retry: false,
   });
 }
 
 export function useAddFavorite() {
-  const qc = useQueryClient();
-  return useMutation({
-    mutationFn: api.favorites.add,
-    onMutate: async (restaurantId) => {
-      // Optimistic update
-      await qc.cancelQueries({ queryKey: ["favorites"] });
-      const previous = qc.getQueryData(["favorites"]);
-      // Add a dummy entry so the UI reacts instantly
-      qc.setQueryData(["favorites"], (old: any) => [...(old || []), { id: "temp", restaurant_id: restaurantId }]);
-      return { previous };
-    },
-    onError: (err, variables, context) => {
-      if (context?.previous) qc.setQueryData(["favorites"], context.previous);
-    },
-    onSettled: () => qc.invalidateQueries({ queryKey: ["favorites"] }),
-  });
+  return useMutation({ mutationFn: async (id: any) => {} });
 }
 
 export function useRemoveFavorite() {
-  const qc = useQueryClient();
-  return useMutation({
-    mutationFn: api.favorites.remove,
-    onMutate: async (restaurantId) => {
-      // Optimistic update
-      await qc.cancelQueries({ queryKey: ["favorites"] });
-      const previous = qc.getQueryData(["favorites"]);
-      qc.setQueryData(["favorites"], (old: any) => (old || []).filter((f: any) => f.restaurant_id !== restaurantId && f.id !== restaurantId));
-      return { previous };
-    },
-    onError: (err, variables, context) => {
-      if (context?.previous) qc.setQueryData(["favorites"], context.previous);
-    },
-    onSettled: () => qc.invalidateQueries({ queryKey: ["favorites"] }),
-  });
+  return useMutation({ mutationFn: async (id: any) => {} });
 }

@@ -5,7 +5,7 @@ import { rupees, cn } from "@/lib/utils";
 import { Plus, Minus, Trash2, ShoppingCart, ArrowRight, Tag, CheckCircle2, XCircle, Loader2 } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
-import { api } from "@/lib/api";
+
 
 function BillRow({ label, value, highlight, bold }: { label: string; value: string; highlight?: boolean; bold?: boolean }) {
   return (
@@ -60,8 +60,13 @@ export default function CartPage() {
     setCouponLoading(true);
     setCouponError(null);
     try {
-      const result = await api.coupons.validate(couponInput, subtotal);
-      setAppliedCoupon({ code: result.code, description: result.description, discount_amount: result.discount_amount });
+      // Simulate API call
+      await new Promise((r) => setTimeout(r, 500));
+      if (couponInput === "WELCOME") {
+        setAppliedCoupon({ code: "WELCOME", description: "Flat ₹50 off on first order", discount_amount: 50 });
+      } else {
+        throw new Error("Invalid or expired coupon code");
+      }
     } catch (err: any) {
       setCouponError(err.message);
       setAppliedCoupon(null);

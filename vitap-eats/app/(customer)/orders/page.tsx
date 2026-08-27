@@ -7,17 +7,16 @@ import { rupees, cn } from "@/lib/utils";
 import { Clock, ChevronRight, ShoppingBag, RotateCcw, Loader2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import toast, { Toaster } from "react-hot-toast";
-import { api } from "@/lib/api";
 import { useState } from "react";
+import { type Order } from "@/lib/db/orders";
 
 const STATUS_COLOR: Record<string, { bg: string; text: string }> = {
-  placed:     { bg: "#dbeafe", text: "#1d4ed8" },
-  accepted:   { bg: "#e0e7ff", text: "#4338ca" },
-  preparing:  { bg: "#fef3c7", text: "#d97706" },
-  picked_up:  { bg: "#ffedd5", text: "#ea580c" },
-  on_the_way: { bg: "#ffedd5", text: "#ea580c" },
-  delivered:  { bg: "#dcfce7", text: "#16a34a" },
-  cancelled:  { bg: "#fee2e2", text: "#dc2626" },
+  pending:          { bg: "#dbeafe", text: "#1d4ed8" },
+  confirmed:        { bg: "#e0e7ff", text: "#4338ca" },
+  preparing:        { bg: "#fef3c7", text: "#d97706" },
+  out_for_delivery: { bg: "#ffedd5", text: "#ea580c" },
+  delivered:        { bg: "#dcfce7", text: "#16a34a" },
+  cancelled:        { bg: "#fee2e2", text: "#dc2626" },
 };
 
 export default function OrdersPage() {
@@ -26,28 +25,22 @@ export default function OrdersPage() {
   const { add, clearAndAdd, conflictingRestaurant } = useCartStore();
   const [reorderingId, setReorderingId] = useState<string | null>(null);
 
-  const handleReorder = async (order: any, e: React.MouseEvent) => {
-    e.preventDefault(); // Don't navigate to tracking page when reorder is clicked
-    if (!order.order_items?.length) return;
+  const handleReorder = async (order: Order, e: React.MouseEvent) => {
+    e.preventDefault(); 
+    if (!order.items?.length) return;
 
     setReorderingId(order.id);
 
     try {
-      // Fetch full menu item details to add to cart
-      const restaurantId = order.restaurant_id;
-      const restaurantName = order.restaurants?.name ?? "Restaurant";
+      const restaurantId = order.restaurantId;
+      const restaurantName = order.restaurantName;
 
-      for (const item of order.order_items) {
-        const menuItemId = item.menu_items?.id ?? item.menu_item_id;
-        const name = item.menu_items?.name ?? "Item";
-        const price = item.unit_price;
+      for (const item of order.items) {
         const conflicting = conflictingRestaurant(restaurantId);
-
         if (conflicting) {
-          // Auto-clear and reorder since user explicitly chose "Reorder"
-          clearAndAdd({ id: menuItemId, restaurantId, restaurantName, name, price });
+          clearAndAdd({ id: item.menuItemId, restaurantId, restaurantName, name: item.name, price: item.price });
         } else {
-          add({ id: menuItemId, restaurantId, restaurantName, name, price });
+          add({ id: item.menuItemId, restaurantId, restaurantName, name: item.name, price: item.price });
         }
       }
 
@@ -99,11 +92,13 @@ export default function OrdersPage() {
 
       {!isLoading && !isError && orders.length > 0 && (
         <div className="space-y-4">
-          {orders.map((order: any) => {
+          {orders.map((order: Order) => {
             const isActive = !["delivered", "cancelled"].includes(order.status);
-            const previewItems = order.order_items?.slice(0, 2) ?? [];
-            const extraCount = (order.order_items?.length ?? 0) - 2;
+            const previewItems = order.items?.slice(0, 2) ?? [];
+            const extraCount = (order.items?.length ?? 0) - 2;
             const colors = STATUS_COLOR[order.status] ?? { bg: "#f3f4f6", text: "#374151" };
+
+            const timeStr = order.createdAt?.toDate ? order.createdAt.toDate().toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" }) : "—";
 
             return (
               <div key={order.id}
@@ -112,10 +107,10 @@ export default function OrdersPage() {
                   {/* Header row */}
                   <div className="flex items-start justify-between gap-3 mb-2">
                     <div>
-                      <p className="font-bold text-[--color-on-surface]">{order.restaurants?.name}</p>
+                      <p className="font-bold text-[--color-on-surface]">{order.restaurantName}</p>
                       <p className="text-xs text-[--color-on-surface-variant] flex items-center gap-1 mt-0.5">
                         <Clock size={11} />
-                        {new Date(order.created_at).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" })}
+                        {timeStr}
                         &nbsp;·&nbsp;{rupees(order.total)}
                       </p>
                     </div>
@@ -130,7 +125,7 @@ export default function OrdersPage() {
                   {/* Item previews */}
                   {previewItems.length > 0 && (
                     <p className="text-sm text-[--color-on-surface-variant] line-clamp-1">
-                      {previewItems.map((item: any) => `${item.quantity}× ${item.menu_items?.name}`).join(", ")}
+                      {previewItems.map((item) => `${item.quantity}× ${item.name}`).join(", ")}
                       {extraCount > 0 && ` +${extraCount} more`}
                     </p>
                   )}

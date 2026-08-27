@@ -6,35 +6,32 @@ import {
 } from "lucide-react";
 import { cn, rupees } from "@/lib/utils";
 import Link from "next/link";
-import { useOrder, useCancelOrder } from "@/lib/hooks";
+import { useCancelOrder } from "@/lib/hooks";
+import { subscribeToOrder, type Order, type OrderStatus } from "@/lib/db/orders";
 import { useCartStore } from "@/lib/store/cart";
 import { Skeleton } from "@/components/ui/Skeleton";
-import { createClient } from "@/lib/supabase/client";
 import { useRouter } from "next/navigation";
 import toast, { Toaster } from "react-hot-toast";
 
 const STEPS = [
-  { key: "placed",     label: "Order Placed",    detail: "We've received your order",       emoji: "🛒" },
-  { key: "accepted",   label: "Order Accepted",   detail: "Restaurant confirmed your order", emoji: "✅" },
-  { key: "preparing",  label: "Preparing",        detail: "Chef is cooking your food",       emoji: "👨‍🍳" },
-  { key: "picked_up",  label: "Picked Up",        detail: "Partner is heading to you",       emoji: "🛵" },
-  { key: "on_the_way", label: "On the Way",       detail: "Your order is nearby!",           emoji: "🔜" },
-  { key: "delivered",  label: "Delivered",        detail: "Enjoy your meal! 🎉",             emoji: "🎉" },
+  { key: "pending",          label: "Order Placed",    detail: "We've received your order",       emoji: "🛒" },
+  { key: "confirmed",        label: "Order Confirmed", detail: "Restaurant confirmed your order", emoji: "✅" },
+  { key: "preparing",        label: "Preparing",       detail: "Chef is cooking your food",       emoji: "👨‍🍳" },
+  { key: "out_for_delivery", label: "On the Way",      detail: "Your order is nearby!",           emoji: "🔜" },
+  { key: "delivered",        label: "Delivered",       detail: "Enjoy your meal! 🎉",             emoji: "🎉" },
 ] as const;
 
 const STATUS_ORDER = STEPS.map((s) => s.key);
 
 const STATUS_COLORS: Record<string, string> = {
-  placed:     "var(--color-warning, #F59E0B)",
-  accepted:   "var(--color-primary)",
-  preparing:  "var(--color-primary)",
-  picked_up:  "var(--color-tertiary)",
-  on_the_way: "var(--color-tertiary)",
-  delivered:  "#22c55e",
-  cancelled:  "var(--color-error)",
+  pending:          "var(--color-warning, #F59E0B)",
+  confirmed:        "var(--color-primary)",
+  preparing:        "var(--color-primary)",
+  out_for_delivery: "var(--color-tertiary)",
+  delivered:        "#22c55e",
+  cancelled:        "var(--color-error)",
 };
 
-// ── Status Toast Helper ─────────────────────────────────────────────────────
 function showStatusToast(status: string) {
   const step = STEPS.find(s => s.key === status);
   if (!step) return;
@@ -52,7 +49,6 @@ function showStatusToast(status: string) {
   ), { duration: 4000, position: "top-center" });
 }
 
-// ── Cancel Dialog ──────────────────────────────────────────────────────────
 function CancelDialog({ onConfirm, onCancel, isPending }: { onConfirm: () => void; onCancel: () => void; isPending: boolean }) {
   return (
     <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
@@ -83,55 +79,44 @@ function CancelDialog({ onConfirm, onCancel, isPending }: { onConfirm: () => voi
 export default function OrderTrackingPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
   const router = useRouter();
-  const { data: order, isLoading, isError, refetch } = useOrder(id);
+  
+  const [order, setOrder] = useState<Order | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isError, setIsError] = useState(false);
+  
   const { mutate: cancelOrder, isPending: isCancelling } = useCancelOrder(id);
-  const { items: cartItems, clear, clearAndAdd } = useCartStore();
+  const { clearAndAdd } = useCartStore();
 
-  const [liveStatus, setLiveStatus] = useState<string | null>(null);
-  const [realtimeConnected, setRealtimeConnected] = useState<boolean | null>(null);
+  const [realtimeConnected, setRealtimeConnected] = useState<boolean>(true);
   const [showCancel, setShowCancel] = useState(false);
   const prevStatusRef = useRef<string | null>(null);
 
-  // ── Supabase Realtime subscription ────────────────────────────────────────
+  // Firestore realtime subscription
   useEffect(() => {
     if (!id) return;
+    const unsub = subscribeToOrder(id, (updatedOrder) => {
+      setIsLoading(false);
+      if (!updatedOrder) {
+        setIsError(true);
+        return;
+      }
+      setOrder(updatedOrder);
+      
+      const newStatus = updatedOrder.status;
+      if (prevStatusRef.current && prevStatusRef.current !== newStatus) {
+        showStatusToast(newStatus);
+      }
+      prevStatusRef.current = newStatus;
+    });
 
-    const supabase = createClient();
-    const channel = supabase
-      .channel(`order-${id}`)
-      .on(
-        "postgres_changes",
-        {
-          event: "UPDATE",
-          schema: "public",
-          table: "orders",
-          filter: `id=eq.${id}`,
-        },
-        (payload) => {
-          const newStatus = payload.new?.status;
-          if (newStatus && newStatus !== prevStatusRef.current) {
-            prevStatusRef.current = newStatus;
-            setLiveStatus(newStatus);
-            showStatusToast(newStatus);
-            // Keep React Query cache in sync
-            refetch();
-          }
-        }
-      )
-      .subscribe((status) => {
-        setRealtimeConnected(status === "SUBSCRIBED");
-      });
+    return () => unsub();
+  }, [id]);
 
-    return () => {
-      supabase.removeChannel(channel);
-    };
-  }, [id, refetch]);
-
-  const currentStatus = liveStatus ?? order?.status ?? "placed";
+  const currentStatus = order?.status ?? "pending";
   const currentIdx = STATUS_ORDER.indexOf(currentStatus as any);
   const isCancelled = currentStatus === "cancelled";
   const isTerminal = isCancelled || currentStatus === "delivered";
-  const canCancel = ["placed", "accepted"].includes(currentStatus);
+  const canCancel = ["pending", "confirmed"].includes(currentStatus);
 
   const handleCancelConfirm = () => {
     cancelOrder(undefined, {
@@ -147,10 +132,7 @@ export default function OrderTrackingPage({ params }: { params: Promise<{ id: st
   };
 
   const handleReorder = () => {
-    if (!order?.order_items?.length) return;
-    const firstItem = order.order_items[0];
-    const menuItem = firstItem.menu_items;
-    if (!menuItem) return;
+    if (!order?.items?.length) return;
     toast.success("Items added to cart! Head to /cart to checkout.", { duration: 3000 });
     router.push("/cart");
   };
@@ -207,23 +189,17 @@ export default function OrderTrackingPage({ params }: { params: Promise<{ id: st
               {isCancelled ? "Order Cancelled" : "Tracking Order"}
             </h1>
             <p className="text-sm text-[--color-on-surface-variant]">
-              #{id.split("-")[0].toUpperCase()} · {new Date(order.created_at).toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit" })}
+              #{id.slice(0, 6).toUpperCase()} · {order.createdAt?.toDate ? order.createdAt.toDate().toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit" }) : "—"}
             </p>
           </div>
           <div className="flex items-center gap-2">
-            {/* Realtime indicator */}
             <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold border"
               style={{
-                background: realtimeConnected ? "#dcfce7" : realtimeConnected === false ? "#fef2f2" : "#f9fafb",
-                borderColor: realtimeConnected ? "#86efac" : realtimeConnected === false ? "#fca5a5" : "#e5e7eb",
-                color: realtimeConnected ? "#16a34a" : realtimeConnected === false ? "#dc2626" : "#6b7280",
+                background: realtimeConnected ? "#dcfce7" : "#fef2f2",
+                borderColor: realtimeConnected ? "#86efac" : "#fca5a5",
+                color: realtimeConnected ? "#16a34a" : "#dc2626",
               }}>
-              {realtimeConnected
-                ? <><Wifi size={12} /> Live</>
-                : realtimeConnected === false
-                  ? <><WifiOff size={12} /> Reconnecting</>
-                  : <><Loader2 size={12} className="animate-spin" /> Connecting</>
-              }
+              {realtimeConnected ? <><Wifi size={12} /> Live</> : <><WifiOff size={12} /> Reconnecting</>}
             </div>
             <span
               className="px-3 py-1 rounded-[--radius-full] text-sm font-bold text-white capitalize"
@@ -248,167 +224,104 @@ export default function OrderTrackingPage({ params }: { params: Promise<{ id: st
         )}
         {isCancelled && (
           <div className="mt-4 flex items-center gap-3 rounded-[--radius-lg] px-4 py-3 bg-red-50 border border-red-200">
-            <XCircle size={20} className="text-red-500" />
+            <XCircle size={20} className="text-red-600" />
             <div>
-              <p className="font-bold text-red-700">Your order has been cancelled.</p>
-              <p className="text-xs text-red-500">Any applicable refund will be processed within 5–7 business days.</p>
+              <p className="font-bold text-red-900">Order Cancelled</p>
+              <p className="text-xs text-red-700">This order has been cancelled and will not be delivered.</p>
             </div>
           </div>
         )}
       </div>
 
       <div className="grid md:grid-cols-2 gap-6">
-        {/* Status Timeline */}
-        <div className="bg-[--color-surface-container-lowest] rounded-[--radius-lg] shadow-[--shadow-md] border border-[--color-border] p-5">
-          <h2 className="font-bold text-[--color-on-surface] mb-4" style={{ fontFamily: "var(--font-heading)" }}>Order Status</h2>
-          <div className="space-y-4">
-            {STEPS.map((step, i) => {
-              const done = i <= currentIdx && !isCancelled;
-              const current = i === currentIdx && !isCancelled;
-              return (
-                <div key={step.key} className="flex gap-3">
-                  <div className="flex flex-col items-center">
-                    {done ? (
-                      <CheckCircle2
-                        size={20}
-                        className={cn(current ? "text-[--color-primary]" : "text-[--color-tertiary]")}
-                        fill="currentColor"
-                      />
-                    ) : (
-                      <Circle size={20} className="text-[--color-border]" />
-                    )}
-                    {i < STEPS.length - 1 && (
-                      <div className={cn("w-0.5 flex-1 mt-1 mb-1 min-h-[20px]", done ? "bg-[--color-tertiary]" : "bg-[--color-border]")} />
-                    )}
-                  </div>
-                  <div className={cn("flex-1 pb-1", !done && !current && "opacity-40")}>
-                    <p className={cn("font-semibold text-sm", current && "text-[--color-primary]")}>
-                      {step.emoji} {step.label}
-                    </p>
-                    <p className="text-xs text-[--color-on-surface-variant]">{step.detail}</p>
-                  </div>
-                </div>
-              );
-            })}
+        {/* Left Col: Timeline & Map */}
+        <div className="space-y-6">
+          <div className="bg-[--color-surface-container-lowest] rounded-[--radius-lg] shadow-[--shadow-sm] p-6 border border-[--color-border]">
+            <h2 className="font-bold text-[--color-on-surface] mb-6">Order Status</h2>
+            <div className="relative">
+              {/* Progress Line */}
+              <div className="absolute left-3.5 top-2 bottom-6 w-0.5 bg-[--color-border]" />
+              
+              <div className="space-y-6 relative">
+                {STEPS.map((step, idx) => {
+                  const isCompleted = idx <= currentIdx && !isCancelled;
+                  const isCurrent = idx === currentIdx && !isCancelled;
+                  
+                  return (
+                    <div key={step.key} className={cn("flex gap-4 transition-opacity", isCancelled ? "opacity-40" : (idx > currentIdx ? "opacity-50" : "opacity-100"))}>
+                      <div className={cn("relative z-10 w-7 h-7 rounded-full flex items-center justify-center shrink-0 border-2", isCompleted ? "border-[--color-primary] bg-[--color-primary] text-white" : "border-[--color-border] bg-white")}>
+                        {isCompleted ? <CheckCircle2 size={14} /> : <Circle size={10} className="text-transparent" />}
+                      </div>
+                      <div className="pt-1">
+                        <p className={cn("font-bold text-sm", isCurrent ? "text-[--color-primary]" : "text-[--color-on-surface]")}>{step.label}</p>
+                        <p className="text-xs text-[--color-on-surface-variant] mt-0.5">{step.detail}</p>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
           </div>
         </div>
 
-        <div className="space-y-4">
-          {/* Delivery Partner */}
-          {order.partner && (
-            <div className="bg-[--color-surface-container-lowest] rounded-[--radius-lg] shadow-[--shadow-md] border border-[--color-border] p-4">
-              <h2 className="font-bold text-[--color-on-surface] mb-3" style={{ fontFamily: "var(--font-heading)" }}>Delivery Partner</h2>
-              <div className="flex items-center gap-3">
-                <div className="w-12 h-12 rounded-full flex items-center justify-center text-white font-bold text-lg" style={{ background: "var(--color-primary)" }}>
-                  {order.partner.full_name?.[0]}
-                </div>
-                <div className="flex-1">
-                  <p className="font-semibold text-[--color-on-surface]">{order.partner.full_name}</p>
-                  <p className="text-xs text-[--color-on-surface-variant]">⭐ {order.partner.rating}</p>
-                </div>
-                <a href={`tel:${order.partner.phone}`}
-                  className="w-10 h-10 rounded-full flex items-center justify-center text-white hover:opacity-80 transition-opacity"
-                  style={{ background: "var(--color-tertiary)" }}>
-                  <Phone size={16} />
-                </a>
-              </div>
+        {/* Right Col: Details */}
+        <div className="space-y-6">
+          {/* Items */}
+          <div className="bg-[--color-surface-container-lowest] rounded-[--radius-lg] shadow-[--shadow-sm] p-6 border border-[--color-border]">
+            <div className="flex items-center gap-2 mb-4 text-[--color-on-surface-variant]">
+              <ReceiptText size={18} />
+              <h2 className="font-bold text-[--color-on-surface]">Order Items</h2>
             </div>
-          )}
-
-          {/* Addresses */}
-          <div className="bg-[--color-surface-container-lowest] rounded-[--radius-lg] shadow-[--shadow-md] border border-[--color-border] p-4 space-y-3">
-            <div className="flex gap-3">
-              <div className="w-8 h-8 rounded-full flex items-center justify-center shrink-0" style={{ background: "var(--color-primary-fixed)" }}>
-                <Bike size={14} style={{ color: "var(--color-primary)" }} />
-              </div>
-              <div>
-                <p className="text-xs text-[--color-on-surface-variant]">Pickup from</p>
-                <p className="font-semibold text-sm text-[--color-on-surface]">{order.restaurants?.name}</p>
-                <p className="text-xs text-[--color-on-surface-variant]">{order.restaurants?.address}</p>
-              </div>
-            </div>
-            <div className="flex gap-3">
-              <div className="w-8 h-8 rounded-full flex items-center justify-center shrink-0" style={{ background: "color-mix(in srgb, var(--color-tertiary) 15%, transparent)" }}>
-                <MapPin size={14} style={{ color: "var(--color-tertiary)" }} />
-              </div>
-              <div>
-                <p className="text-xs text-[--color-on-surface-variant]">Delivering to</p>
-                <p className="font-semibold text-sm text-[--color-on-surface]">{order.delivery_address?.label}</p>
-                <p className="text-xs text-[--color-on-surface-variant]">{order.delivery_address?.line1}</p>
-              </div>
-            </div>
-          </div>
-
-          {/* Order Summary */}
-          <div className="bg-[--color-surface-container-lowest] rounded-[--radius-lg] shadow-[--shadow-md] border border-[--color-border] p-4">
-            <h2 className="font-bold text-[--color-on-surface] mb-3" style={{ fontFamily: "var(--font-heading)" }}>Order Summary</h2>
-            <div className="space-y-2">
-              {order.order_items?.map((item: any) => (
-                <div key={item.id} className="flex justify-between text-sm">
-                  <span className="text-[--color-on-surface-variant]">{item.quantity}× {item.menu_items?.name}</span>
-                  <span className="tabular-nums font-medium">{rupees(item.unit_price * item.quantity)}</span>
+            
+            <div className="space-y-3 mb-4">
+              {order.items?.map((item, idx) => (
+                <div key={idx} className="flex justify-between items-start text-sm">
+                  <div>
+                    <p className="font-semibold text-[--color-on-surface]">{item.quantity}× {item.name}</p>
+                  </div>
+                  <p className="font-semibold text-[--color-on-surface]">{rupees(item.price * item.quantity)}</p>
                 </div>
               ))}
-              <div className="pt-2 border-t border-[--color-border] space-y-1">
-                <div className="flex justify-between text-xs text-[--color-on-surface-variant]">
-                  <span>Subtotal</span><span className="tabular-nums">{rupees(order.subtotal)}</span>
+            </div>
+            
+            <div className="border-t border-dashed border-[--color-border] pt-4 space-y-2 text-sm">
+              <div className="flex justify-between text-[--color-on-surface-variant]">
+                <span>Item Total</span>
+                <span>{rupees(order.subtotal)}</span>
+              </div>
+              <div className="flex justify-between text-[--color-on-surface-variant]">
+                <span>Delivery Fee</span>
+                <span>{rupees(order.deliveryFee)}</span>
+              </div>
+              {order.discount ? (
+                <div className="flex justify-between font-medium" style={{ color: "var(--color-primary)" }}>
+                  <span>Discount</span>
+                  <span>-{rupees(order.discount)}</span>
                 </div>
-                <div className="flex justify-between text-xs text-[--color-on-surface-variant]">
-                  <span>Delivery Fee</span><span className="tabular-nums">{rupees(order.delivery_fee)}</span>
-                </div>
-                <div className="flex justify-between text-xs text-[--color-on-surface-variant]">
-                  <span>Platform Fee</span><span className="tabular-nums">{rupees(order.platform_fee)}</span>
-                </div>
-                {order.discount > 0 && (
-                  <div className="flex justify-between text-xs text-green-600 font-semibold">
-                    <span>Discount ({order.coupon_code})</span>
-                    <span className="tabular-nums">-{rupees(order.discount)}</span>
-                  </div>
-                )}
-                <div className="flex justify-between font-bold text-sm pt-1">
-                  <span>Total paid</span>
-                  <span className="tabular-nums">{rupees(order.total)}</span>
-                </div>
+              ) : null}
+              <div className="flex justify-between font-bold text-base text-[--color-on-surface] pt-2 border-t border-[--color-border]">
+                <span>Total</span>
+                <span>{rupees(order.total)}</span>
               </div>
             </div>
           </div>
+          
+          {/* Actions */}
+          <div className="flex gap-3">
+            {canCancel ? (
+              <button onClick={() => setShowCancel(true)} className="flex-1 py-3 bg-red-50 text-red-600 font-bold text-sm rounded-[--radius-md] hover:bg-red-100 transition-colors">
+                Cancel Order
+              </button>
+            ) : isTerminal ? (
+              <button onClick={handleReorder} className="flex-1 py-3 text-white font-bold text-sm rounded-[--radius-md] shadow-[--shadow-sm] hover:opacity-90 transition-all flex items-center justify-center gap-2" style={{ background: "var(--color-primary)" }}>
+                <RotateCcw size={16} /> Reorder
+              </button>
+            ) : null}
+            <button onClick={handleShare} className="flex-1 py-3 bg-[--color-surface-container] text-[--color-on-surface] font-bold text-sm rounded-[--radius-md] hover:bg-[--color-surface-container-high] transition-colors flex items-center justify-center gap-2">
+              <Share2 size={16} /> Share
+            </button>
+          </div>
         </div>
-      </div>
-
-      {/* Action Buttons */}
-      <div className="mt-6 flex gap-3 flex-wrap">
-        {canCancel && (
-          <button
-            onClick={() => setShowCancel(true)}
-            className="text-sm font-semibold px-4 py-2.5 rounded-[--radius-md] border-2 transition-colors hover:bg-red-50"
-            style={{ borderColor: "var(--color-error)", color: "var(--color-error)" }}
-          >
-            <span className="flex items-center gap-1.5"><XCircle size={15} /> Cancel Order</span>
-          </button>
-        )}
-        {(currentStatus === "delivered" || isCancelled) && (
-          <button
-            onClick={handleReorder}
-            className="text-sm font-semibold px-4 py-2.5 rounded-[--radius-md] border-2 text-[--color-primary] border-[--color-primary] hover:bg-[--color-primary-fixed] transition-colors flex items-center gap-1.5"
-          >
-            <RotateCcw size={15} /> Reorder
-          </button>
-        )}
-        <button
-          onClick={handleShare}
-          className="text-sm font-semibold px-4 py-2.5 rounded-[--radius-md] border border-[--color-border] text-[--color-on-surface-variant] hover:bg-[--color-surface-container] transition-colors flex items-center gap-1.5"
-        >
-          <Share2 size={15} /> Share Order
-        </button>
-        <Link
-          href="/orders"
-          className="text-sm font-semibold px-4 py-2.5 rounded-[--radius-md] border border-[--color-border] text-[--color-on-surface-variant] hover:bg-[--color-surface-container] transition-colors flex items-center gap-1.5"
-        >
-          <ReceiptText size={15} /> Order History
-        </Link>
-        <Link href="/" className="text-sm font-semibold px-4 py-2.5 rounded-[--radius-md] border border-[--color-border] text-[--color-on-surface-variant] hover:bg-[--color-surface-container] transition-colors">
-          Back to Home
-        </Link>
       </div>
     </div>
   );

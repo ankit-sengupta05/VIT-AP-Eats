@@ -19,10 +19,9 @@ function DishCard({ dish, restaurantId, restaurantName }: { dish: any; restauran
     <div className="flex gap-3 py-4 border-b border-[--color-border] last:border-0">
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-1.5 mb-1">
-          <span className={cn("w-3.5 h-3.5 rounded-sm border-2 flex items-center justify-center", dish.is_veg ? "border-green-600" : "border-red-500")}>
-            <span className={cn("w-1.5 h-1.5 rounded-full", dish.is_veg ? "bg-green-600" : "bg-red-500")} />
+          <span className={cn("w-3.5 h-3.5 rounded-sm border-2 flex items-center justify-center", dish.isVeg ? "border-green-600" : "border-red-500")}>
+            <span className={cn("w-1.5 h-1.5 rounded-full", dish.isVeg ? "bg-green-600" : "bg-red-500")} />
           </span>
-          {dish.is_popular && <Badge variant="success" className="text-[9px] py-0">Bestseller</Badge>}
         </div>
         <h4 className="font-semibold text-[--color-on-surface] text-sm mb-0.5">{dish.name}</h4>
         <p className="text-xs text-[--color-on-surface-variant] line-clamp-2 mb-2">{dish.description}</p>
@@ -30,11 +29,11 @@ function DishCard({ dish, restaurantId, restaurantName }: { dish: any; restauran
       </div>
       <div className="shrink-0 flex flex-col items-center gap-2">
         <div className="relative w-24 h-20 rounded-[--radius-md] overflow-hidden bg-[--color-surface-container]">
-          {dish.image_url && <Image src={dish.image_url} alt={dish.name} fill sizes="96px" className="object-cover" />}
+          {dish.imageUrl && <Image src={dish.imageUrl} alt={dish.name} fill sizes="96px" className="object-cover" />}
         </div>
         {qty === 0 ? (
           <button
-            onClick={() => add({ id: dish.id, restaurantId, restaurantName, name: dish.name, price: dish.price, image: dish.image_url })}
+            onClick={() => add({ id: dish.id, restaurantId, restaurantName, name: dish.name, price: dish.price, image: dish.imageUrl })}
             className="w-24 h-8 text-xs font-bold rounded-[--radius-md] border-2 bg-white hover:bg-[--color-primary] hover:text-white hover:border-[--color-primary] transition-all"
             style={{ borderColor: "var(--color-primary)", color: "var(--color-primary)" }}>
             ADD
@@ -43,7 +42,7 @@ function DishCard({ dish, restaurantId, restaurantName }: { dish: any; restauran
           <div className="w-24 h-8 flex items-center justify-between rounded-[--radius-md] px-1.5" style={{ background: "var(--color-primary)" }}>
             <button onClick={() => update(dish.id, qty - 1)} className="text-white p-0.5 hover:opacity-80"><Minus size={14} /></button>
             <span className="text-white font-bold text-sm tabular-nums">{qty}</span>
-            <button onClick={() => add({ id: dish.id, restaurantId, restaurantName, name: dish.name, price: dish.price, image: dish.image_url })} className="text-white p-0.5 hover:opacity-80"><Plus size={14} /></button>
+            <button onClick={() => add({ id: dish.id, restaurantId, restaurantName, name: dish.name, price: dish.price, image: dish.imageUrl })} className="text-white p-0.5 hover:opacity-80"><Plus size={14} /></button>
           </div>
         )}
       </div>
@@ -88,8 +87,8 @@ export default function RestaurantPage({ params }: { params: Promise<{ slug: str
   return (
     <div className="min-h-screen">
       <div className="relative w-full h-48 md:h-64 overflow-hidden">
-        {restaurant.image_url && (
-          <Image src={restaurant.image_url} alt={restaurant.name} fill sizes="100vw" className="object-cover" priority />
+        {restaurant.imageUrl && (
+          <Image src={restaurant.imageUrl} alt={restaurant.name} fill sizes="100vw" className="object-cover" priority />
         )}
         <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
         <Link href="/" className="absolute top-4 left-4 w-9 h-9 rounded-full bg-black/40 backdrop-blur-sm flex items-center justify-center text-white hover:bg-black/60 transition-colors">
@@ -103,14 +102,14 @@ export default function RestaurantPage({ params }: { params: Promise<{ slug: str
       <div className="max-w-[1280px] mx-auto px-4 md:px-10">
         <div className="py-4 border-b border-[--color-border]">
           <h1 className="text-2xl font-extrabold text-[--color-on-surface] mb-1" style={{ fontFamily: "var(--font-heading)" }}>{restaurant.name}</h1>
-          <p className="text-sm text-[--color-on-surface-variant] mb-3">{restaurant.cuisine?.join(", ")} · {restaurant.address}</p>
+          <p className="text-sm text-[--color-on-surface-variant] mb-3">{restaurant.cuisine} · VIT-AP Campus</p>
           <div className="flex flex-wrap items-center gap-4 text-sm">
             <span className="flex items-center gap-1.5 font-semibold" style={{ color: "var(--color-tertiary)" }}>
               <Star size={14} fill="currentColor" />{restaurant.rating}
             </span>
-            <span className="flex items-center gap-1.5 text-[--color-on-surface-variant]"><Clock size={14} />{restaurant.delivery_time_min} min</span>
-            <span className="flex items-center gap-1.5 text-[--color-on-surface-variant]"><Bike size={14} />{restaurant.delivery_fee === 0 ? "Free delivery" : rupees(restaurant.delivery_fee)}</span>
-            <span className="flex items-center gap-1.5 text-[--color-on-surface-variant]"><Info size={14} />Min {rupees(restaurant.min_order)}</span>
+            <span className="flex items-center gap-1.5 text-[--color-on-surface-variant]"><Clock size={14} />{restaurant.deliveryTime} min</span>
+            <span className="flex items-center gap-1.5 text-[--color-on-surface-variant]"><Bike size={14} />{restaurant.deliveryFee === 0 ? "Free delivery" : rupees(restaurant.deliveryFee)}</span>
+            <span className="flex items-center gap-1.5 text-[--color-on-surface-variant]"><Info size={14} />Min {rupees(0)}</span>
           </div>
         </div>
 

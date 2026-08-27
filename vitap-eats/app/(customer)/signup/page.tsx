@@ -3,46 +3,48 @@ import { useState, Suspense } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { ArrowRight, ChevronLeft, Loader2 } from "lucide-react";
-import { createClient } from "@/lib/supabase/client";
+import { createUserWithEmailAndPassword, updateProfile } from "firebase/auth";
+import { auth } from "@/lib/firebase";
+import { upsertUserProfile } from "@/lib/db/users";
 
 function SignupForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const nextParam = searchParams.get("next") ?? "/";
-  
-  const [fullName, setFullName] = useState("");
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [phone, setPhone] = useState("");
-  
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
 
-  const supabase = createClient();
+  const [fullName, setFullName] = useState("");
+  const [email, setEmail]       = useState("");
+  const [password, setPassword] = useState("");
+  const [phone, setPhone]       = useState("");
+
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError]         = useState<string | null>(null);
 
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
     setError(null);
 
-    const { error: signUpError } = await supabase.auth.signUp({
-      email,
-      password,
-      options: {
-        data: {
-          full_name: fullName,
-          phone: phone,
-          role: "customer",
-        }
-      }
-    });
+    try {
+      const { user } = await createUserWithEmailAndPassword(auth, email, password);
 
-    if (signUpError) {
-      setError(signUpError.message);
-      setIsLoading(false);
-    } else {
+      // Set Firebase display name
+      await updateProfile(user, { displayName: fullName });
+
+      // Write profile to Firestore /users/{uid}
+      await upsertUserProfile({
+        uid:      user.uid,
+        email:    user.email!,
+        fullName,
+        phone,
+        role:     "customer",
+      });
+
       router.push(nextParam);
       router.refresh();
+    } catch (err: any) {
+      setError(err.message ?? "Sign up failed. Please try again.");
+      setIsLoading(false);
     }
   };
 
@@ -70,12 +72,11 @@ function SignupForm() {
             type="text"
             value={fullName}
             onChange={(e) => setFullName(e.target.value)}
-            placeholder="John Doe"
+            placeholder="Ankit Sengupta"
             className="w-full px-4 py-3 border border-[--color-border] rounded-[--radius-md] focus:outline-none focus:border-[--color-primary] bg-[--color-surface-container-lowest]"
             required
           />
         </div>
-        
         <div>
           <label className="block text-sm font-semibold text-[--color-on-surface] mb-1.5">Email Address</label>
           <input
@@ -87,24 +88,16 @@ function SignupForm() {
             required
           />
         </div>
-
         <div>
           <label className="block text-sm font-semibold text-[--color-on-surface] mb-1.5">Phone Number</label>
-          <div className="flex">
-            <span className="inline-flex items-center px-4 rounded-l-[--radius-md] border border-r-0 border-[--color-border] bg-[--color-surface-container-low] text-[--color-on-surface-variant] text-sm font-medium">
-              +91
-            </span>
-            <input
-              type="tel"
-              value={phone}
-              onChange={(e) => setPhone(e.target.value)}
-              placeholder="90000 12345"
-              className="flex-1 px-4 py-3 border border-[--color-border] rounded-r-[--radius-md] focus:outline-none focus:border-[--color-primary] bg-[--color-surface-container-lowest]"
-              required
-            />
-          </div>
+          <input
+            type="tel"
+            value={phone}
+            onChange={(e) => setPhone(e.target.value)}
+            placeholder="+91 90000 12345"
+            className="w-full px-4 py-3 border border-[--color-border] rounded-[--radius-md] focus:outline-none focus:border-[--color-primary] bg-[--color-surface-container-lowest]"
+          />
         </div>
-
         <div>
           <label className="block text-sm font-semibold text-[--color-on-surface] mb-1.5">Password</label>
           <input
@@ -112,24 +105,26 @@ function SignupForm() {
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             placeholder="••••••••"
-            minLength={6}
             className="w-full px-4 py-3 border border-[--color-border] rounded-[--radius-md] focus:outline-none focus:border-[--color-primary] bg-[--color-surface-container-lowest]"
+            minLength={6}
             required
           />
         </div>
-
         <button
           type="submit"
           disabled={isLoading}
-          className="w-full mt-6 py-3.5 text-white font-bold text-base rounded-[--radius-md] shadow-[--shadow-md] hover:opacity-90 transition-all flex items-center justify-center gap-2 disabled:opacity-70"
+          className="w-full mt-2 py-3.5 text-white font-bold text-base rounded-[--radius-md] shadow-[--shadow-md] hover:opacity-90 transition-all flex items-center justify-center gap-2 disabled:opacity-70"
           style={{ background: "var(--color-primary)" }}
         >
-          {isLoading ? <Loader2 size={18} className="animate-spin" /> : <>Sign Up <ArrowRight size={18} /></>}
+          {isLoading ? <Loader2 size={18} className="animate-spin" /> : <>Create Account <ArrowRight size={18} /></>}
         </button>
       </form>
 
       <p className="text-center text-sm text-[--color-on-surface-variant] mt-6">
-        Already have an account? <Link href={`/login?next=${encodeURIComponent(nextParam)}`} className="font-semibold hover:underline" style={{ color: "var(--color-primary)" }}>Log in</Link>
+        Already have an account?{" "}
+        <Link href={`/login?next=${encodeURIComponent(nextParam)}`} className="font-semibold hover:underline" style={{ color: "var(--color-primary)" }}>
+          Log in
+        </Link>
       </p>
     </div>
   );
@@ -138,7 +133,7 @@ function SignupForm() {
 export default function SignupPage() {
   return (
     <div className="min-h-screen bg-[--color-bg] flex flex-col">
-      <header className="px-4 md:px-10 h-16 flex items-center border-b border-[--color-border] bg-[--color-surface-container-lowest]">
+      <header className="px-4 md:px-10 h-16 flex items-center border-b border-[--color-border] bg-white dark:bg-zinc-950">
         <Link href="/" className="flex items-center gap-2 text-[--color-on-surface-variant] hover:text-[--color-on-surface] transition-colors">
           <ChevronLeft size={20} />
           <span className="font-semibold text-sm">Back</span>

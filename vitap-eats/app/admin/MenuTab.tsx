@@ -1,19 +1,20 @@
 import { useState, useEffect, useCallback } from "react";
-import { api } from "@/lib/api";
 import { Loader2, Plus, Edit2, Trash2, ToggleLeft, ToggleRight, Search } from "lucide-react";
 import toast from "react-hot-toast";
 import { rupees, cn } from "@/lib/utils";
+import { getRestaurants, type Restaurant } from "@/lib/db/restaurants";
+import { getMenuByRestaurant, updateMenuItem, type MenuItem } from "@/lib/db/items";
 
 export function MenuTab() {
-  const [restaurants, setRestaurants] = useState<any[]>([]);
+  const [restaurants, setRestaurants] = useState<Restaurant[]>([]);
   const [selectedRestId, setSelectedRestId] = useState<string>("");
-  const [menu, setMenu] = useState<any[]>([]);
+  const [menu, setMenu] = useState<MenuItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [search, setSearch] = useState("");
 
   const fetchRestaurants = useCallback(async () => {
     try {
-      const data = await api.admin.getRestaurants();
+      const data = await getRestaurants();
       setRestaurants(data);
       if (data.length > 0) setSelectedRestId(data[0].id);
     } catch {
@@ -24,7 +25,7 @@ export function MenuTab() {
   const fetchMenu = useCallback(async (restId: string) => {
     setIsLoading(true);
     try {
-      const data = await api.admin.getMenu(restId);
+      const data = await getMenuByRestaurant(restId);
       setMenu(data);
     } catch {
       toast.error("Failed to load menu");
@@ -39,17 +40,17 @@ export function MenuTab() {
     if (selectedRestId) fetchMenu(selectedRestId);
   }, [selectedRestId, fetchMenu]);
 
-  const handleToggleAvail = async (item: any) => {
-    const newVal = !item.is_available;
+  const handleToggleAvail = async (item: MenuItem) => {
+    const newVal = !item.isAvailable;
     try {
       // Optimistic update
-      setMenu(prev => prev.map(m => m.id === item.id ? { ...m, is_available: newVal } : m));
-      await api.admin.updateMenuItem(item.id, { is_available: newVal });
+      setMenu(prev => prev.map(m => m.id === item.id ? { ...m, isAvailable: newVal } : m));
+      await updateMenuItem(item.id, { isAvailable: newVal });
       toast.success(`${item.name} is now ${newVal ? 'Available' : 'Unavailable'}`);
     } catch {
       toast.error("Failed to update availability");
       // Revert on error
-      setMenu(prev => prev.map(m => m.id === item.id ? { ...m, is_available: !newVal } : m));
+      setMenu(prev => prev.map(m => m.id === item.id ? { ...m, isAvailable: !newVal } : m));
     }
   };
 
@@ -60,7 +61,7 @@ export function MenuTab() {
     if (!acc[item.category]) acc[item.category] = [];
     acc[item.category].push(item);
     return acc;
-  }, {} as Record<string, any[]>);
+  }, {} as Record<string, MenuItem[]>);
 
   return (
     <div className="space-y-6">
@@ -107,16 +108,16 @@ export function MenuTab() {
             <div key={category}>
               <h3 className="font-bold text-lg text-gray-800 mb-3 border-b border-gray-200 pb-2">{category}</h3>
               <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-                {(items as any[]).map((item: any) => (
-                  <div key={item.id} className={cn("bg-white rounded-[--radius-lg] border p-4 flex gap-4 transition-colors", !item.is_available ? "bg-gray-50 border-gray-200" : "border-gray-200 shadow-sm hover:border-[--color-primary]")}>
-                    <div className={cn("w-16 h-16 rounded-md flex items-center justify-center text-xs font-bold shrink-0", item.image_url ? "" : "bg-gray-100 text-gray-400")}>
-                      {item.image_url ? <img src={item.image_url} alt={item.name} className="w-full h-full object-cover rounded-md" /> : "No Img"}
+                {(items as MenuItem[]).map((item) => (
+                  <div key={item.id} className={cn("bg-white rounded-[--radius-lg] border p-4 flex gap-4 transition-colors", !item.isAvailable ? "bg-gray-50 border-gray-200" : "border-gray-200 shadow-sm hover:border-[--color-primary]")}>
+                    <div className={cn("w-16 h-16 rounded-md flex items-center justify-center text-xs font-bold shrink-0 overflow-hidden", item.imageUrl ? "" : "bg-gray-100 text-gray-400")}>
+                      {item.imageUrl ? <img src={item.imageUrl} alt={item.name} className="w-full h-full object-cover rounded-md" /> : "No Img"}
                     </div>
                     <div className="flex-1 min-w-0 flex flex-col justify-between">
                       <div>
                         <div className="flex items-start justify-between gap-2">
                           <p className="font-bold text-sm text-gray-900 truncate flex items-center gap-1.5">
-                            <span className={cn("w-2 h-2 rounded-full", item.is_veg ? "bg-green-500" : "bg-red-500")} />
+                            <span className={cn("w-2 h-2 rounded-full", item.isVeg ? "bg-green-500" : "bg-red-500")} />
                             {item.name}
                           </p>
                           <span className="font-extrabold text-sm text-gray-900 tabular-nums">{rupees(item.price)}</span>
@@ -127,10 +128,10 @@ export function MenuTab() {
                       <div className="flex items-center justify-between mt-3">
                         <button 
                           onClick={() => handleToggleAvail(item)}
-                          className={cn("flex items-center gap-1 text-xs font-semibold px-2 py-1 rounded transition-colors", item.is_available ? "text-green-700 bg-green-50 hover:bg-green-100" : "text-gray-500 bg-gray-100 hover:bg-gray-200")}
+                          className={cn("flex items-center gap-1 text-xs font-semibold px-2 py-1 rounded transition-colors", item.isAvailable ? "text-green-700 bg-green-50 hover:bg-green-100" : "text-gray-500 bg-gray-100 hover:bg-gray-200")}
                         >
-                          {item.is_available ? <ToggleRight size={16} /> : <ToggleLeft size={16} />}
-                          {item.is_available ? "Available" : "Hidden"}
+                          {item.isAvailable ? <ToggleRight size={16} /> : <ToggleLeft size={16} />}
+                          {item.isAvailable ? "Available" : "Hidden"}
                         </button>
 
                         <div className="flex items-center gap-1">

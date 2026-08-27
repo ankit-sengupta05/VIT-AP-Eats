@@ -2,46 +2,32 @@
 import { useState, Suspense } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { ArrowRight, ChevronLeft, Phone, Mail, Loader2 } from "lucide-react";
-import { cn } from "@/lib/utils";
-import { createClient } from "@/lib/supabase/client";
+import { ArrowRight, ChevronLeft, Mail, Loader2 } from "lucide-react";
+import { signInWithEmailAndPassword } from "firebase/auth";
+import { auth } from "@/lib/firebase";
 
 function LoginForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const nextParam = searchParams.get("next") ?? "/";
-  
-  const [method, setMethod] = useState<"phone" | "email">("email");
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
 
-  const supabase = createClient();
+  const [email, setEmail]       = useState("");
+  const [password, setPassword] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError]       = useState<string | null>(null);
 
   const handleEmailLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
     setError(null);
-
-    const { error: authError } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    });
-
-    if (authError) {
-      setError(authError.message);
-      setIsLoading(false);
-    } else {
+    try {
+      await signInWithEmailAndPassword(auth, email, password);
       router.push(nextParam);
       router.refresh();
+    } catch (err: any) {
+      setError(err.message ?? "Login failed. Please try again.");
+      setIsLoading(false);
     }
-  };
-
-  const handlePhoneOTP = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setError("Phone OTP is not configured in this demo yet. Please use email/password.");
   };
 
   return (
@@ -64,92 +50,43 @@ function LoginForm() {
         </div>
       )}
 
-      {/* Toggle Method */}
-      <div className="flex p-1 bg-[--color-surface-container] rounded-[--radius-md] mb-6">
+      <form onSubmit={handleEmailLogin} className="space-y-4">
+        <div>
+          <label className="block text-sm font-semibold text-[--color-on-surface] mb-1.5">Email Address</label>
+          <input
+            type="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            placeholder="name@vitap.ac.in"
+            className="w-full px-4 py-3 border border-[--color-border] rounded-[--radius-md] focus:outline-none focus:border-[--color-primary] bg-[--color-surface-container-lowest]"
+            required
+          />
+        </div>
+        <div>
+          <label className="block text-sm font-semibold text-[--color-on-surface] mb-1.5">Password</label>
+          <input
+            type="password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            placeholder="••••••••"
+            className="w-full px-4 py-3 border border-[--color-border] rounded-[--radius-md] focus:outline-none focus:border-[--color-primary] bg-[--color-surface-container-lowest]"
+            required
+          />
+        </div>
+        <div className="flex justify-end">
+          <Link href="/forgot-password" className="text-xs font-semibold hover:underline" style={{ color: "var(--color-primary)" }}>
+            Forgot password?
+          </Link>
+        </div>
         <button
-          onClick={() => { setMethod("email"); setError(null); }}
-          className={cn(
-            "flex-1 flex items-center justify-center gap-2 py-2 text-sm font-semibold rounded-[--radius-sm] transition-all",
-            method === "email" ? "bg-[--color-surface-container-lowest] shadow-[--shadow-sm] text-[--color-on-surface]" : "text-[--color-on-surface-variant] hover:text-[--color-on-surface]"
-          )}
+          type="submit"
+          disabled={isLoading}
+          className="w-full mt-2 py-3.5 text-white font-bold text-base rounded-[--radius-md] shadow-[--shadow-md] hover:opacity-90 transition-all flex items-center justify-center gap-2 disabled:opacity-70"
+          style={{ background: "var(--color-primary)" }}
         >
-          <Mail size={16} /> Email
+          {isLoading ? <Loader2 size={18} className="animate-spin" /> : <>Log in <ArrowRight size={18} /></>}
         </button>
-        <button
-          onClick={() => { setMethod("phone"); setError(null); }}
-          className={cn(
-            "flex-1 flex items-center justify-center gap-2 py-2 text-sm font-semibold rounded-[--radius-sm] transition-all",
-            method === "phone" ? "bg-[--color-surface-container-lowest] shadow-[--shadow-sm] text-[--color-on-surface]" : "text-[--color-on-surface-variant] hover:text-[--color-on-surface]"
-          )}
-        >
-          <Phone size={16} /> Phone
-        </button>
-      </div>
-
-      {method === "email" ? (
-        <form onSubmit={handleEmailLogin} className="space-y-4">
-          <div>
-            <label className="block text-sm font-semibold text-[--color-on-surface] mb-1.5">Email Address</label>
-            <input
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="name@vitap.ac.in"
-              className="w-full px-4 py-3 border border-[--color-border] rounded-[--radius-md] focus:outline-none focus:border-[--color-primary] bg-[--color-surface-container-lowest]"
-              required
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-semibold text-[--color-on-surface] mb-1.5">Password</label>
-            <input
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              placeholder="••••••••"
-              className="w-full px-4 py-3 border border-[--color-border] rounded-[--radius-md] focus:outline-none focus:border-[--color-primary] bg-[--color-surface-container-lowest]"
-              required
-            />
-          </div>
-          <div className="flex justify-end">
-            <Link href="/forgot-password" className="text-xs font-semibold hover:underline" style={{ color: "var(--color-primary)" }}>
-              Forgot password?
-            </Link>
-          </div>
-          <button
-            type="submit"
-            disabled={isLoading}
-            className="w-full mt-2 py-3.5 text-white font-bold text-base rounded-[--radius-md] shadow-[--shadow-md] hover:opacity-90 transition-all flex items-center justify-center gap-2 disabled:opacity-70"
-            style={{ background: "var(--color-primary)" }}
-          >
-            {isLoading ? <Loader2 size={18} className="animate-spin" /> : <>Log in <ArrowRight size={18} /></>}
-          </button>
-        </form>
-      ) : (
-        <form onSubmit={handlePhoneOTP} className="space-y-4">
-          <div>
-            <label className="block text-sm font-semibold text-[--color-on-surface] mb-1.5">Phone Number</label>
-            <div className="flex">
-              <span className="inline-flex items-center px-4 rounded-l-[--radius-md] border border-r-0 border-[--color-border] bg-[--color-surface-container-low] text-[--color-on-surface-variant] text-sm font-medium">
-                +91
-              </span>
-              <input
-                type="tel"
-                placeholder="90000 12345"
-                className="flex-1 px-4 py-3 border border-[--color-border] rounded-r-[--radius-md] focus:outline-none focus:border-[--color-primary] bg-[--color-surface-container-lowest]"
-                required
-              />
-            </div>
-          </div>
-          <button
-            type="submit"
-            disabled={isLoading}
-            className="w-full mt-6 py-3.5 text-white font-bold text-base rounded-[--radius-md] shadow-[--shadow-md] hover:opacity-90 transition-all flex items-center justify-center gap-2 disabled:opacity-70"
-            style={{ background: "var(--color-primary)" }}
-          >
-            Send OTP <ArrowRight size={18} />
-          </button>
-        </form>
-      )}
+      </form>
 
       <p className="text-center text-sm text-[--color-on-surface-variant] mt-6">
         Don&apos;t have an account? <Link href={`/signup?next=${encodeURIComponent(nextParam)}`} className="font-semibold hover:underline" style={{ color: "var(--color-primary)" }}>Sign up</Link>
