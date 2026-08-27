@@ -34,9 +34,22 @@ export function useSession() {
   useEffect(() => {
     const unsub = onAuthStateChanged(auth, async (firebaseUser: User | null) => {
       if (firebaseUser) {
-        const snap = await getDoc(doc(db, "users", firebaseUser.uid));
-        const data = snap.data();
-        const resolvedRole = (data?.role as "customer" | "partner" | "admin") ?? "customer";
+        let resolvedRole: "customer" | "partner" | "admin" = "customer";
+        let phone = "";
+        let fullName = "";
+
+        try {
+          const snap = await getDoc(doc(db, "users", firebaseUser.uid));
+          if (snap.exists()) {
+            const data = snap.data();
+            resolvedRole = (data?.role as "customer" | "partner" | "admin") ?? "customer";
+            phone = data?.phone ?? "";
+            fullName = data?.fullName ?? "";
+          }
+        } catch (err) {
+          console.error("Failed to fetch user profile from Firestore:", err);
+          // Fallback to customer if Firestore fails (e.g. database not created yet)
+        }
 
         // Write role + uid to cookies so the middleware can read them
         setCookie("app_uid",  firebaseUser.uid);
@@ -45,10 +58,10 @@ export function useSession() {
         const appUser: AppUser = {
           uid:         firebaseUser.uid,
           email:       firebaseUser.email,
-          displayName: firebaseUser.displayName,
+          displayName: firebaseUser.displayName ?? fullName ?? null,
           role:        resolvedRole,
-          phone:       data?.phone ?? "",
-          fullName:    data?.fullName ?? "",
+          phone,
+          fullName,
         };
         setUser(appUser);
         setRole(resolvedRole);
