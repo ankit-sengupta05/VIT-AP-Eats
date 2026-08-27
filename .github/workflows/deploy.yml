@@ -7,8 +7,8 @@ on:
     branches: ["main"]
 
 jobs:
-  lint-and-build:
-    name: Lint & Build Check
+  lint:
+    name: Lint & Security Audit
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
@@ -29,16 +29,6 @@ jobs:
         working-directory: ./vitap-eats
         run: npm run lint
 
-      - name: TypeScript & Build Check
-        working-directory: ./vitap-eats
-        env:
-          NEXT_PUBLIC_FIREBASE_API_KEY: ${{ secrets.NEXT_PUBLIC_FIREBASE_API_KEY }}
-          NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN: ${{ secrets.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN }}
-          NEXT_PUBLIC_FIREBASE_PROJECT_ID: ${{ secrets.NEXT_PUBLIC_FIREBASE_PROJECT_ID }}
-          NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET: ${{ secrets.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET }}
-          NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID: ${{ secrets.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID }}
-          NEXT_PUBLIC_FIREBASE_APP_ID: ${{ secrets.NEXT_PUBLIC_FIREBASE_APP_ID }}
-        run: npm run build
-
-  # NOTE: Vercel auto-deploys from GitHub integration on every push to main.
-  # No manual deployment step needed — visit https://vercel.com/dashboard to monitor.
+  # NOTE: Build & deployment is handled automatically by Vercel's GitHub integration.
+  # Vercel has the real Firebase env vars configured and builds on every push to main.
+  # Monitor deployments at: https://vercel.com/dashboard
