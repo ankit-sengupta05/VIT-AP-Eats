@@ -1,0 +1,74 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ── Helper functions ──────────────────────────────────────
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isOwner(uid) {
+      return isSignedIn() && request.auth.uid == uid;
+    }
+
+    function hasRole(role) {
+      return isSignedIn() && request.auth.token.role == role;
+    }
+
+    function isAdmin() {
+      return hasRole("admin");
+    }
+
+    function isPartner() {
+      return hasRole("partner") || isAdmin();
+    }
+
+    // ── Users ─────────────────────────────────────────────────
+    match /users/{uid} {
+      // Users can read/write their own profile
+      allow read, write: if isOwner(uid);
+      // Admins can read any user
+      allow read: if isAdmin();
+    }
+
+    // ── Restaurants ───────────────────────────────────────────
+    match /restaurants/{restaurantId} {
+      // Anyone can read restaurants (public menu)
+      allow read: if true;
+      // Only admins can create/update/delete restaurants
+      allow write: if isAdmin();
+    }
+
+    // ── Menu Items ────────────────────────────────────────────
+    match /menu_items/{itemId} {
+      // Anyone can read menu items
+      allow read: if true;
+      // Partners and admins can manage menu items
+      allow create, update: if isPartner();
+      allow delete: if isAdmin();
+    }
+
+    // ── Orders ────────────────────────────────────────────────
+    match /orders/{orderId} {
+      // Customers can read their own orders
+      // Partners and admins can read all orders
+      allow read: if isSignedIn() && (
+        resource.data.userId == request.auth.uid ||
+        isPartner()
+      );
+
+      // Only authenticated customers can create orders
+      allow create: if isSignedIn() &&
+        request.resource.data.userId == request.auth.uid;
+
+      // Status updates allowed by: the order owner (cancel only), partners, admins
+      allow update: if isSignedIn() && (
+        resource.data.userId == request.auth.uid ||
+        isPartner()
+      );
+
+      // Only admins can delete orders
+      allow delete: if isAdmin();
+    }
+  }
+}

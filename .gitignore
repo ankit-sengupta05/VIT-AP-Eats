@@ -12,6 +12,8 @@
 *.key
 *.cert
 secrets/
+serviceAccount.json
+scripts/serviceAccount.json
 
 # ── Database schema (keep internal) ───────────────────────────────
 /supabase/
