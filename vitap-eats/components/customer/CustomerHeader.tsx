@@ -1,7 +1,7 @@
 "use client";
 import { useState } from "react";
 import Link from "next/link";
-import { ShoppingCart, MapPin, Search, Bell, User, LogOut, Menu } from "lucide-react";
+import { ShoppingCart, MapPin, Search, Bell } from "lucide-react";
 import { useCartStore } from "@/lib/store/cart";
 import { useSession } from "@/lib/hooks/useSession";
 import { useLocationStore } from "@/lib/store/location";
@@ -9,7 +9,7 @@ import LocationPickerModal from "@/components/shared/LocationPicker";
 
 export default function CustomerHeader() {
   const count = useCartStore((s) => s.count());
-  const { user, signOut, loading } = useSession();
+  const { user, role, signOut, loading } = useSession();
   const { label } = useLocationStore();
   const [isLocationOpen, setIsLocationOpen] = useState(false);
 
@@ -78,11 +78,19 @@ export default function CustomerHeader() {
                   <span className="text-sm font-semibold max-w-[100px] truncate">{user.displayName ?? "User"}</span>
                 </button>
                 
-                <div className="absolute right-0 top-full mt-2 w-48 bg-[--color-surface-container-lowest] border border-[--color-border] rounded-[--radius-md] shadow-[--shadow-lg] py-1 opacity-0 pointer-events-none group-hover:opacity-100 group-hover:pointer-events-auto transition-opacity z-50">
-                  <Link href="/profile" className="block px-4 py-2 text-sm text-[--color-on-surface] hover:bg-[--color-surface-container-low]">My Profile</Link>
-                  <Link href="/orders" className="block px-4 py-2 text-sm text-[--color-on-surface] hover:bg-[--color-surface-container-low]">Orders</Link>
-                  <Link href="/favorites" className="block px-4 py-2 text-sm text-[--color-on-surface] hover:bg-[--color-surface-container-low]">Favorites</Link>
-                  <button onClick={signOut} className="block w-full text-left px-4 py-2 text-sm text-[--color-error] hover:bg-[--color-surface-container-low]">Sign out</button>
+                {/* Wrap dropdown with padding so hover doesn't break on gap */}
+                <div className="absolute right-0 top-full pt-1.5 w-48 opacity-0 pointer-events-none group-hover:opacity-100 group-hover:pointer-events-auto transition-opacity z-50">
+                  <div className="bg-white dark:bg-zinc-900 border border-[--color-border] rounded-[--radius-md] shadow-xl py-1 overflow-hidden">
+                    {role === "admin" && (
+                      <Link href="/admin" className="block px-4 py-2 text-sm font-bold text-[--color-primary] bg-orange-50 hover:bg-orange-100 dark:bg-orange-950/30 dark:hover:bg-orange-950/50">
+                        Admin Dashboard
+                      </Link>
+                    )}
+                    <Link href="/profile" className="block px-4 py-2 text-sm text-[--color-on-surface] hover:bg-[--color-surface-container-low]">My Profile</Link>
+                    <Link href="/orders" className="block px-4 py-2 text-sm text-[--color-on-surface] hover:bg-[--color-surface-container-low]">Orders</Link>
+                    <Link href="/favorites" className="block px-4 py-2 text-sm text-[--color-on-surface] hover:bg-[--color-surface-container-low]">Favorites</Link>
+                    <button onClick={signOut} className="block w-full text-left px-4 py-2 text-sm text-[--color-error] hover:bg-[--color-surface-container-low]">Sign out</button>
+                  </div>
                 </div>
               </div>
             ) : !loading && !user ? (

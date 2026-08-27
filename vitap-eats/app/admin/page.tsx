@@ -1,13 +1,15 @@
 "use client";
-import { useState } from "react";
-import { TrendingUp, ShoppingBag, Star, Bike } from "lucide-react";
+import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { TrendingUp, ShoppingBag, Star, Bike, Loader2, Lock } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Toaster } from "react-hot-toast";
+import { useSession } from "@/lib/hooks/useSession";
 
 // Import tabs
-import { OrdersTab } from "./OrdersTab";
+import { OrdersTab }  from "./OrdersTab";
 import { PartnersTab } from "./PartnersTab";
-import { MenuTab } from "./MenuTab";
+import { MenuTab }    from "./MenuTab";
 import { InsightsTab } from "./InsightsTab";
 
 const NAV_ITEMS = [
@@ -18,11 +20,39 @@ const NAV_ITEMS = [
 ];
 
 export default function AdminPage() {
+  const { user, role, loading } = useSession();
+  const router = useRouter();
   const [tab, setTab] = useState<"orders" | "partners" | "menu" | "insights">("orders");
+
+  // Redirect if not admin after session resolves
+  useEffect(() => {
+    if (!loading && role !== "admin") {
+      router.replace("/");
+    }
+  }, [loading, role, router]);
+
+  // Loading / access denied states
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-[--color-bg]">
+        <Loader2 size={36} className="animate-spin text-[--color-primary]" />
+      </div>
+    );
+  }
+
+  if (role !== "admin") {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center gap-4 bg-[--color-bg] text-center p-4">
+        <Lock size={48} className="text-[--color-error]" />
+        <h1 className="text-2xl font-bold text-[--color-on-surface]">Access Denied</h1>
+        <p className="text-[--color-on-surface-variant]">You need admin privileges to access this page.</p>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen flex bg-[--color-bg]">
-      <Toaster />
+      <Toaster position="top-right" />
 
       {/* Sidebar (desktop) */}
       <aside className="hidden md:flex flex-col w-56 shrink-0 border-r border-[--color-border] bg-white dark:bg-zinc-950 sticky top-0 h-screen">
@@ -34,6 +64,7 @@ export default function AdminPage() {
               <p className="text-xs text-[--color-tertiary]">● Live Ops</p>
             </div>
           </div>
+          <p className="text-xs text-[--color-on-surface-variant] mt-2 truncate">{user?.email}</p>
         </div>
         <nav className="p-3 flex-1 space-y-1">
           {NAV_ITEMS.map(({ id, label, icon: Icon }) => (
@@ -51,6 +82,11 @@ export default function AdminPage() {
             </button>
           ))}
         </nav>
+        <div className="p-3 border-t border-[--color-border]">
+          <a href="/" className="w-full flex items-center gap-2 px-3 py-2 rounded-md text-sm text-[--color-on-surface-variant] hover:bg-[--color-surface-container-low] transition-colors">
+            ← Back to Site
+          </a>
+        </div>
       </aside>
 
       {/* Main content */}

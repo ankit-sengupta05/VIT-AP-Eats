@@ -1,19 +1,5 @@
-#!/usr/bin/env node
-/**
- * VIT-AP Eats — Firestore Seed Data Script
- *
- * Seeds the Firestore database with sample restaurants and menu items
- * so the app shows real content immediately after setup.
- *
- * Usage:
- *   node scripts/seed-firestore.js
- *
- * Prerequisites:
- *   npm install firebase-admin
- *   Place your serviceAccount.json in scripts/ folder
- */
-
-const admin = require("firebase-admin");
+const { initializeApp, cert } = require("firebase-admin/app");
+const { getFirestore, FieldValue } = require("firebase-admin/firestore");
 
 let serviceAccount;
 try {
@@ -24,8 +10,8 @@ try {
   process.exit(1);
 }
 
-admin.initializeApp({ credential: admin.credential.cert(serviceAccount) });
-const db = admin.firestore();
+initializeApp({ credential: cert(serviceAccount) });
+const db = getFirestore();
 
 // ── Seed Data ─────────────────────────────────────────────────────────────────
 const restaurants = [
@@ -111,7 +97,7 @@ async function seedFirestore() {
     } else {
       const ref = await db.collection("restaurants").add({
         ...rest,
-        createdAt: admin.firestore.FieldValue.serverTimestamp(),
+        createdAt: FieldValue.serverTimestamp(),
       });
       restId = ref.id;
       console.log(`✅  Created restaurant: ${rest.name} (${restId})`);
@@ -131,7 +117,7 @@ async function seedFirestore() {
         await db.collection("menu_items").add({
           ...item,
           restaurantId: restId,
-          createdAt: admin.firestore.FieldValue.serverTimestamp(),
+          createdAt: FieldValue.serverTimestamp(),
         });
         console.log(`   ✅  Added item: ${item.name}`);
       }
