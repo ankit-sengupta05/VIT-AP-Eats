@@ -1,5 +1,5 @@
 "use client";
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import { Loader2, Plus, Edit2, Trash2, ToggleLeft, ToggleRight, Search, X, Check } from "lucide-react";
 import toast from "react-hot-toast";
 import { rupees, cn } from "@/lib/utils";
@@ -23,6 +23,7 @@ const EMPTY_FORM = {
 function ItemModal({
   title,
   form,
+  categories,
   onChange,
   onSave,
   onClose,
@@ -30,11 +31,16 @@ function ItemModal({
 }: {
   title: string;
   form: typeof EMPTY_FORM;
+  categories: string[];
   onChange: (k: keyof typeof EMPTY_FORM, v: string | boolean) => void;
   onSave: () => void;
   onClose: () => void;
   saving: boolean;
 }) {
+  const [isCustomCategory, setIsCustomCategory] = useState(
+    form.category ? !categories.includes(form.category) : false
+  );
+
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
       <div className="rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden" style={{ backgroundColor: "var(--color-surface-container-lowest)" }}>
@@ -70,9 +76,46 @@ function ItemModal({
             </div>
             <div>
               <label className="block text-sm font-semibold text-[--color-on-surface] mb-1">Category *</label>
-              <input value={form.category} onChange={e => onChange("category", e.target.value)}
-                placeholder="e.g. Biryani"
-                className="w-full px-3 py-2 rounded-lg border border-[--color-border] bg-[--color-surface-container-lowest] text-[--color-on-surface] text-sm focus:outline-none focus:ring-2 focus:ring-[--color-primary]" />
+              {!isCustomCategory ? (
+                <select
+                  value={form.category}
+                  onChange={(e) => {
+                    if (e.target.value === "__custom__") {
+                      setIsCustomCategory(true);
+                      onChange("category", "");
+                    } else {
+                      onChange("category", e.target.value);
+                    }
+                  }}
+                  className="w-full px-3 py-2 rounded-lg border border-[--color-border] bg-[--color-surface-container-lowest] text-[--color-on-surface] text-sm focus:outline-none focus:ring-2 focus:ring-[--color-primary]"
+                >
+                  <option value="" disabled>Select category...</option>
+                  {categories.map((c) => (
+                    <option key={c} value={c}>{c}</option>
+                  ))}
+                  <option value="__custom__">+ Add Custom Category</option>
+                </select>
+              ) : (
+                <div className="flex gap-2">
+                  <input
+                    value={form.category}
+                    onChange={(e) => onChange("category", e.target.value)}
+                    placeholder="e.g. Biryani"
+                    autoFocus
+                    className="flex-1 px-3 py-2 rounded-lg border border-[--color-border] bg-[--color-surface-container-lowest] text-[--color-on-surface] text-sm focus:outline-none focus:ring-2 focus:ring-[--color-primary]"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setIsCustomCategory(false);
+                      onChange("category", "");
+                    }}
+                    className="px-3 py-2 rounded-lg border border-[--color-border] text-[--color-on-surface-variant] hover:bg-[--color-surface-container-low]"
+                  >
+                    Cancel
+                  </button>
+                </div>
+              )}
             </div>
             <div className="col-span-2">
               <label className="block text-sm font-semibold text-[--color-on-surface] mb-1">Image URL (optional)</label>
@@ -255,6 +298,12 @@ export function MenuTab() {
     return acc;
   }, {} as Record<string, MenuItem[]>);
 
+  const categories = useMemo(() => {
+    const cats = new Set<string>();
+    menu.forEach(m => cats.add(m.category));
+    return Array.from(cats).sort();
+  }, [menu]);
+
   return (
     <div className="space-y-6">
       {/* Modal */}
@@ -262,6 +311,7 @@ export function MenuTab() {
         <ItemModal
           title={editTarget ? "Edit Item" : "Add New Item"}
           form={form}
+          categories={categories}
           onChange={handleChange}
           onSave={handleSave}
           onClose={() => setShowModal(false)}

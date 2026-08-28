@@ -1,5 +1,6 @@
 import {
   collection, getDocs, getDoc, doc, query, where, orderBy, limit,
+  addDoc, updateDoc, deleteDoc
 } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 
@@ -65,3 +66,17 @@ export async function getMenu(restaurantId: string): Promise<MenuItem[]> {
   const snap = await getDocs(q);
   return snap.docs.map((d) => ({ id: d.id, ...d.data() } as MenuItem));
 }
+
+export async function addRestaurant(data: Omit<Restaurant, "id">): Promise<string> {
+  const ref = await addDoc(collection(db, "restaurants"), data);
+  return ref.id;
+}
+
+export async function updateRestaurant(id: string, data: Partial<Omit<Restaurant, "id">>): Promise<void> {
+  await updateDoc(doc(db, "restaurants", id), data);
+}
+
+export async function deleteRestaurant(id: string): Promise<void> {
+  await deleteDoc(doc(db, "restaurants", id));
+}
+

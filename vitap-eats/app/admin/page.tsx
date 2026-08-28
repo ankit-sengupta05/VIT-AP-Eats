@@ -1,22 +1,24 @@
 "use client";
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { TrendingUp, ShoppingBag, Star, Bike, Loader2, Lock, Users } from "lucide-react";
+import { TrendingUp, ShoppingBag, Star, Bike, Loader2, Lock, Users, Store } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Toaster } from "react-hot-toast";
 import { useSession } from "@/lib/hooks/useSession";
 
 // Import tabs
 import { OrdersTab }       from "./OrdersTab";
+import { ApplicationsTab } from "./ApplicationsTab";
 import { PartnersTab }     from "./PartnersTab";
+import { RestaurantsTab }  from "./RestaurantsTab";
 import { MenuTab }         from "./MenuTab";
 import { InsightsTab }     from "./InsightsTab";
-import { ApplicationsTab } from "./ApplicationsTab";
 
 const NAV_ITEMS = [
   { id: "orders",       label: "Orders",       icon: ShoppingBag },
   { id: "applications", label: "Applications", icon: Users       },
   { id: "partners",     label: "Partners",     icon: Bike        },
+  { id: "restaurants",  label: "Restaurants",  icon: Store       },
   { id: "menu",         label: "Menu",         icon: Star        },
   { id: "insights",     label: "Insights",     icon: TrendingUp  },
 ];
@@ -24,7 +26,7 @@ const NAV_ITEMS = [
 export default function AdminPage() {
   const { user, role, loading } = useSession();
   const router = useRouter();
-  const [tab, setTab] = useState<"orders" | "applications" | "partners" | "menu" | "insights">("orders");
+  const [tab, setTab] = useState<"orders" | "applications" | "partners" | "restaurants" | "menu" | "insights">("orders");
 
   // Redirect if not admin after session resolves
   useEffect(() => {
@@ -119,6 +121,7 @@ export default function AdminPage() {
           {tab === "orders"       && <OrdersTab />}
           {tab === "applications" && <ApplicationsTab />}
           {tab === "partners"     && <PartnersTab partners={[]} />}
+          {tab === "restaurants"  && <RestaurantsTab />}
           {tab === "menu"         && <MenuTab />}
           {tab === "insights"     && <InsightsTab />}
         </div>

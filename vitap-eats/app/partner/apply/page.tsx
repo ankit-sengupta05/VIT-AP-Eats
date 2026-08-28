@@ -150,7 +150,7 @@ export default function PartnerApplyPage() {
             <Store size={28} />
           </div>
           <h1 className="text-3xl font-extrabold text-[--color-on-surface]" style={{ fontFamily: "var(--font-heading)" }}>
-            Partner with VIT-AP Eats
+            Partner with us
           </h1>
           <p className="text-[--color-on-surface-variant] mt-2">
             Reach thousands of students on campus. Fill in the details below and we&apos;ll get back to you.
