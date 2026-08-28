@@ -39,16 +39,26 @@ export function useSession() {
         let fullName = "";
 
         try {
+          // 1. First, check secure custom claims (set by the set-admin-role script)
+          const tokenResult = await firebaseUser.getIdTokenResult();
+          if (tokenResult.claims.role) {
+            resolvedRole = tokenResult.claims.role as "customer" | "partner" | "admin";
+          }
+          
+          // 2. Fetch additional profile data from Firestore
           const snap = await getDoc(doc(db, "users", firebaseUser.uid));
           if (snap.exists()) {
             const data = snap.data();
-            resolvedRole = (data?.role as "customer" | "partner" | "admin") ?? "customer";
             phone = data?.phone ?? "";
             fullName = data?.fullName ?? "";
+            // Fallback to Firestore role if claims aren't set
+            if (!tokenResult.claims.role && data?.role) {
+              resolvedRole = (data?.role as "customer" | "partner" | "admin");
+            }
           }
         } catch (err) {
-          console.error("Failed to fetch user profile from Firestore:", err);
-          // Fallback to customer if Firestore fails (e.g. database not created yet)
+          console.error("Failed to fetch user role/profile:", err);
+          // Fallback to customer if Firestore fails
         }
 
         // Write role + uid to cookies so the middleware can read them
