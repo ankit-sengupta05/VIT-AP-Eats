@@ -82,5 +82,15 @@ service cloud.firestore {
       // Only admins can permanently delete orders.
       allow delete: if isAdmin();
     }
+
+    // ── Partner Applications ──────────────────────────────────
+    // Signed-in users can submit and read their own application.
+    // Admins can read all and update the status.
+    match /partner_applications/{appId} {
+      allow read:   if isSignedIn() && (resource.data.uid == request.auth.uid || isAdmin());
+      allow create: if isSignedIn() && request.resource.data.uid == request.auth.uid;
+      allow update: if isAdmin();
+      allow delete: if isAdmin();
+    }
   }
 }

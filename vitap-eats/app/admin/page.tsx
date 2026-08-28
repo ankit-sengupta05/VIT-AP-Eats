@@ -1,28 +1,30 @@
 "use client";
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { TrendingUp, ShoppingBag, Star, Bike, Loader2, Lock } from "lucide-react";
+import { TrendingUp, ShoppingBag, Star, Bike, Loader2, Lock, Users } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Toaster } from "react-hot-toast";
 import { useSession } from "@/lib/hooks/useSession";
 
 // Import tabs
-import { OrdersTab }  from "./OrdersTab";
-import { PartnersTab } from "./PartnersTab";
-import { MenuTab }    from "./MenuTab";
-import { InsightsTab } from "./InsightsTab";
+import { OrdersTab }       from "./OrdersTab";
+import { PartnersTab }     from "./PartnersTab";
+import { MenuTab }         from "./MenuTab";
+import { InsightsTab }     from "./InsightsTab";
+import { ApplicationsTab } from "./ApplicationsTab";
 
 const NAV_ITEMS = [
-  { id: "orders",   label: "Orders",   icon: ShoppingBag },
-  { id: "partners", label: "Partners", icon: Bike        },
-  { id: "menu",     label: "Menu",     icon: Star        },
-  { id: "insights", label: "Insights", icon: TrendingUp  },
+  { id: "orders",       label: "Orders",       icon: ShoppingBag },
+  { id: "applications", label: "Applications", icon: Users       },
+  { id: "partners",     label: "Partners",     icon: Bike        },
+  { id: "menu",         label: "Menu",         icon: Star        },
+  { id: "insights",     label: "Insights",     icon: TrendingUp  },
 ];
 
 export default function AdminPage() {
   const { user, role, loading } = useSession();
   const router = useRouter();
-  const [tab, setTab] = useState<"orders" | "partners" | "menu" | "insights">("orders");
+  const [tab, setTab] = useState<"orders" | "applications" | "partners" | "menu" | "insights">("orders");
 
   // Redirect if not admin after session resolves
   useEffect(() => {
@@ -114,10 +116,11 @@ export default function AdminPage() {
         </header>
 
         <div className="px-4 md:px-6 py-6 space-y-6">
-          {tab === "orders"   && <OrdersTab />}
-          {tab === "partners" && <PartnersTab partners={[]} />}
-          {tab === "menu"     && <MenuTab />}
-          {tab === "insights" && <InsightsTab />}
+          {tab === "orders"       && <OrdersTab />}
+          {tab === "applications" && <ApplicationsTab />}
+          {tab === "partners"     && <PartnersTab partners={[]} />}
+          {tab === "menu"         && <MenuTab />}
+          {tab === "insights"     && <InsightsTab />}
         </div>
       </div>
     </div>

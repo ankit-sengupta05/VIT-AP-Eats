@@ -208,7 +208,7 @@ export default function HomePage() {
           </div>
           <p>© 2026 VIT-AP Eats · Made with ❤️ on campus</p>
           <div className="flex gap-4">
-            <Link href="/partner" className="hover:text-[--color-primary] transition-colors">Partner with us</Link>
+            <Link href="/partner/apply" className="hover:text-[--color-primary] transition-colors">Partner with us</Link>
             <Link href="/admin" className="hover:text-[--color-primary] transition-colors">Admin</Link>
           </div>
         </div>

@@ -10,7 +10,7 @@ export function useRestaurants(cuisine?: string, lat?: number, lng?: number) {
   return useQuery({
     queryKey: ["restaurants", cuisine ?? "all"],
     queryFn: () => getRestaurants(cuisine === "all" ? undefined : cuisine),
-    staleTime: 2 * 60 * 1000, // 2 min
+    staleTime: 30_000, // 30 seconds — so admin changes reflect quickly
   });
 }
 

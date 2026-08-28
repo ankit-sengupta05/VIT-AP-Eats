@@ -32,9 +32,11 @@ export interface MenuItem {
 
 export async function getRestaurants(cuisine?: string): Promise<Restaurant[]> {
   const col = collection(db, "restaurants");
+  // Fetch all restaurants (no isOpen filter to avoid composite index requirement)
+  // Filter by cuisine if specified, sort by rating
   const q = cuisine
-    ? query(col, where("cuisine", "==", cuisine), where("isOpen", "==", true))
-    : query(col, where("isOpen", "==", true), orderBy("rating", "desc"));
+    ? query(col, where("cuisine", "==", cuisine))
+    : query(col, orderBy("rating", "desc"));
   const snap = await getDocs(q);
   return snap.docs.map((d) => ({ id: d.id, ...d.data() } as Restaurant));
 }

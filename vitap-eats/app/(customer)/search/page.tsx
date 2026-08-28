@@ -28,16 +28,16 @@ export default function SearchPage() {
 
   const filtered = restaurants
     .filter((r: any) => {
-      if (vegOnly && !r.is_veg_only) return false;
-      if (maxTime && r.delivery_time_min > maxTime) return false;
+      if (vegOnly && !r.isVeg) return false;
+      if (maxTime && r.deliveryTime > maxTime) return false;
       if (!query) return true;
       const q = query.toLowerCase();
-      return r.name.toLowerCase().includes(q) || r.cuisine?.some((c: string) => c.toLowerCase().includes(q));
+      return r.name.toLowerCase().includes(q) || r.cuisine?.toLowerCase().includes(q);
     })
     .sort((a: any, b: any) => {
       if (sort === "rating") return b.rating - a.rating;
-      if (sort === "time")   return a.delivery_time_min - b.delivery_time_min;
-      if (sort === "fee")    return a.delivery_fee - b.delivery_fee;
+      if (sort === "time")   return a.deliveryTime - b.deliveryTime;
+      if (sort === "fee")    return a.deliveryFee - b.deliveryFee;
       return 0;
     });
 
@@ -102,10 +102,10 @@ export default function SearchPage() {
               {filtered.map((r: any) => (
                 <RestaurantCard key={r.id} r={{
                   id: r.id, slug: r.slug, name: r.name, cuisine: r.cuisine,
-                  rating: r.rating, deliveryTime: r.delivery_time_min,
-                  deliveryFee: r.delivery_fee, minOrder: r.min_order,
-                  image: r.image_url, isOpen: r.is_open, isVeg: r.is_veg_only,
-                  discount: r.discount_label,
+                  rating: r.rating, deliveryTime: r.deliveryTime,
+                  deliveryFee: r.deliveryFee, minOrder: 0,
+                  image: r.imageUrl, isOpen: r.isOpen, isVeg: r.isVeg,
+                  discount: undefined,
                 }} />
               ))}
             </div>

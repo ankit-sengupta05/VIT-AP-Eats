@@ -1,18 +1,72 @@
 "use client";
 import { useState } from "react";
+import { useEffect } from "react";
+import { useRouter } from "next/navigation";
 import {
   TrendingUp, Bike, CheckCircle2, Clock, Star, MapPin,
   Bell, ToggleLeft, ToggleRight, Loader2, ChevronRight, Banknote
 } from "lucide-react";
 import { rupees, cn } from "@/lib/utils";
 import toast, { Toaster } from "react-hot-toast";
+import { useSession } from "@/lib/hooks/useSession";
+import { getMyApplication, type PartnerApplication } from "@/lib/db/partners";
+import Link from "next/link";
 
 export default function PartnerDashboardPage() {
+  const { user, loading: sessionLoading } = useSession();
+  const router = useRouter();
+  
+  const [appStatus, setAppStatus] = useState<PartnerApplication | null | "loading">("loading");
   const [isOnline, setIsOnline] = useState(false);
   const [isTogglingOnline, setIsTogglingOnline] = useState(false);
 
+  useEffect(() => {
+    if (sessionLoading) return;
+    if (!user) {
+      router.push("/login?redirect=/partner");
+      return;
+    }
+    getMyApplication(user.uid)
+      .then((app) => setAppStatus(app))
+      .catch(() => setAppStatus(null));
+  }, [user, sessionLoading, router]);
+
+  if (sessionLoading || appStatus === "loading") {
+    return (
+      <div className="min-h-screen flex items-center justify-center" style={{ background: "var(--color-bg)" }}>
+        <Loader2 size={36} className="animate-spin text-[--color-primary]" />
+      </div>
+    );
+  }
+
+  // If not approved, show prompt to apply
+  if (!appStatus || appStatus.status !== "approved") {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center p-6 text-center" style={{ background: "var(--color-bg)" }}>
+        <div className="w-16 h-16 rounded-2xl flex items-center justify-center text-white text-2xl mx-auto mb-4 bg-gray-200 text-gray-500">
+          <Bike size={28} />
+        </div>
+        <h1 className="text-2xl font-bold text-[--color-on-surface] mb-2" style={{ fontFamily: "var(--font-heading)" }}>
+          Partner Access Required
+        </h1>
+        <p className="text-[--color-on-surface-variant] mb-6">
+          {appStatus?.status === "pending" 
+            ? "Your application is currently under review." 
+            : appStatus?.status === "declined"
+            ? "Your previous application was declined."
+            : "You need an approved partner account to access this dashboard."}
+        </p>
+        <Link href="/partner/apply"
+          className="px-6 py-3 rounded-[--radius-full] text-white font-bold text-sm"
+          style={{ background: "var(--color-primary)" }}>
+          {appStatus ? "View Application Status" : "Apply to Partner"}
+        </Link>
+      </div>
+    );
+  }
+
   const profile = {
-    full_name: "Delivery Partner",
+    full_name: user?.displayName || "Delivery Partner",
     rating: 4.8,
     today_earnings: 120,
     total_deliveries: 45
