@@ -22,11 +22,18 @@ export interface MenuItem {
   variants?: MenuItemVariant[]; // optional size/portion variants
 }
 
+/** Strips keys whose value is `undefined` — Firestore rejects them outright. */
+function stripUndefined<T extends object>(obj: T): Partial<T> {
+  return Object.fromEntries(
+    Object.entries(obj).filter(([, v]) => v !== undefined)
+  ) as Partial<T>;
+}
+
 export async function addMenuItem(
   data: Omit<MenuItem, "id">
 ): Promise<string> {
   const ref = await addDoc(collection(db, "menu_items"), {
-    ...data,
+    ...stripUndefined(data),
     createdAt: serverTimestamp(),
   });
   return ref.id;
@@ -36,7 +43,7 @@ export async function updateMenuItem(
   id: string,
   data: Partial<Omit<MenuItem, "id">>
 ): Promise<void> {
-  await updateDoc(doc(db, "menu_items", id), { ...data, updatedAt: serverTimestamp() });
+  await updateDoc(doc(db, "menu_items", id), { ...stripUndefined(data), updatedAt: serverTimestamp() });
 }
 
 export async function deleteMenuItem(id: string): Promise<void> {
