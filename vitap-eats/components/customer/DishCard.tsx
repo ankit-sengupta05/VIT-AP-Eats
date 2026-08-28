@@ -53,19 +53,7 @@ export function DishCard({
               className={cn("w-1.5 h-1.5 rounded-full", dish.isVeg ? "bg-green-600" : "bg-red-500")}
             />
           </span>
-          {/* Bestseller badge */}
-          {dish.rating && dish.rating >= 4.7 && (
-            <span
-              className="text-[10px] font-bold px-1.5 py-0.5 tracking-wide uppercase"
-              style={{
-                background: "var(--color-primary-fixed)",
-                color: "var(--color-primary)",
-                borderRadius: "var(--radius-full)",
-              }}
-            >
-              Bestseller
-            </span>
-          )}
+
         </div>
 
         <h4
