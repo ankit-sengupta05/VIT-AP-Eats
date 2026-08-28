@@ -2,22 +2,26 @@
 import { useEffect, useState } from "react";
 import dynamic from "next/dynamic";
 import { useLocationStore } from "@/lib/store/location";
-import { Search, Loader2, Navigation } from "lucide-react";
+import { Loader2, Navigation } from "lucide-react";
 
 // Import ALL of react-leaflet in a single dynamic component to avoid
 // dynamically importing hooks, which is not allowed in Next.js.
 const LeafletMap = dynamic(() => import("./LeafletMap"), { ssr: false });
 
 export default function LocationPickerModal({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) {
-  const { lat, lng, label, setLocation } = useLocationStore();
+  const { lat, lng, setLocation } = useLocationStore();
   const [tempLat, setTempLat] = useState(lat);
   const [tempLng, setTempLng] = useState(lng);
   const [isDetecting, setIsDetecting] = useState(false);
 
   useEffect(() => {
     if (isOpen) {
-      setTempLat(lat);
-      setTempLng(lng);
+      // Use setTimeout to avoid calling setState synchronously in effect body
+      const t = setTimeout(() => {
+        setTempLat(lat);
+        setTempLng(lng);
+      }, 0);
+      return () => clearTimeout(t);
     }
   }, [lat, lng, isOpen]);
 

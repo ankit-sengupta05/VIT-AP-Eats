@@ -1,6 +1,6 @@
 import {
   collection, addDoc, getDocs, doc, updateDoc, query, where, orderBy,
-  serverTimestamp, limit,
+  serverTimestamp, limit, type Timestamp,
 } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 
@@ -17,8 +17,8 @@ export interface PartnerApplication {
   address: string;
   description: string;
   status: ApplicationStatus;
-  createdAt: any;
-  reviewedAt?: any;
+  createdAt: Timestamp | null;
+  reviewedAt?: Timestamp | null;
   reviewNote?: string;
 }
 

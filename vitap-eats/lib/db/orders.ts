@@ -1,6 +1,6 @@
 import {
-  collection, addDoc, updateDoc, deleteDoc, doc, serverTimestamp,
-  onSnapshot, query, where, orderBy, type Unsubscribe, getDocs,
+  collection, addDoc, updateDoc, doc, serverTimestamp,
+  onSnapshot, query, where, orderBy, type Unsubscribe, getDocs, type Timestamp,
 } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 
@@ -34,7 +34,7 @@ export interface Order {
   address: string;
   couponCode?: string;
   discount?: number;
-  createdAt: any;
+  createdAt: Timestamp | null;
 }
 
 export async function createOrder(

@@ -4,9 +4,9 @@ import Image from "next/image";
 import { Plus, Minus, ChevronDown } from "lucide-react";
 import { useCartStore } from "@/lib/store/cart";
 import { cn } from "@/lib/utils";
-import type { MenuItemVariant } from "@/lib/db/items";
+import type { MenuItem, MenuItemVariant } from "@/lib/db/items";
 
-export function DishCard({ dish, restaurantId, restaurantName }: { dish: any; restaurantId: string; restaurantName: string }) {
+export function DishCard({ dish, restaurantId, restaurantName }: { dish: MenuItem; restaurantId: string; restaurantName: string }) {
   const { items, add, update } = useCartStore();
 
   const hasVariants = dish.variants && dish.variants.length > 0;

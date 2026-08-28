@@ -1,5 +1,5 @@
 import {
-  doc, getDoc, setDoc, serverTimestamp,
+  doc, getDoc, setDoc, serverTimestamp, type Timestamp,
 } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 
@@ -10,7 +10,7 @@ export interface UserProfile {
   phone: string;
   role: "customer" | "partner" | "admin";
   avatarUrl?: string;
-  createdAt?: any;
+  createdAt?: Timestamp | null;
 }
 
 export async function getUserProfile(uid: string): Promise<UserProfile | null> {

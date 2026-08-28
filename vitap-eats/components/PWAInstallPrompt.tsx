@@ -22,13 +22,15 @@ export function PWAInstallPrompt() {
 
     // iOS detection
     const ua = navigator.userAgent;
-    const isIOSDevice = /iphone|ipad|ipod/i.test(ua) && !(window as any).MSStream;
-    const isInStandaloneMode = (window.navigator as any).standalone === true;
+    const isIOSDevice = /iphone|ipad|ipod/i.test(ua) && !(window as Window & { MSStream?: unknown }).MSStream;
+    const isInStandaloneMode = (window.navigator as Navigator & { standalone?: boolean }).standalone === true;
 
     if (isIOSDevice && !isInStandaloneMode) {
-      setIsIOS(true);
-      // Show iOS prompt after 5s
-      setTimeout(() => setIsIOSPromptVisible(true), 5000);
+      // Use setTimeout so setState is not called synchronously in the effect body
+      setTimeout(() => {
+        setIsIOS(true);
+        setTimeout(() => setIsIOSPromptVisible(true), 5000);
+      }, 0);
       return;
     }
 

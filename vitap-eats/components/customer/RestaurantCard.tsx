@@ -27,14 +27,14 @@ export default function RestaurantCard({ r }: { r: Restaurant }) {
   const { mutate: addFavorite } = useAddFavorite();
   const { mutate: removeFavorite } = useRemoveFavorite();
 
-  const isFavorited = favorites.some((f: any) => f.restaurant_id === r.id);
+  const isFavorited = favorites.some((f: { restaurant_id: string }) => f.restaurant_id === r.id);
 
   const handleFavoriteClick = (e: React.MouseEvent) => {
     e.preventDefault();
     if (isFavorited) {
       removeFavorite(r.id);
     } else {
-      addFavorite({ restaurant_id: r.id });
+      addFavorite(r.id);
     }
   };
 
