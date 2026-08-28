@@ -15,7 +15,7 @@ export default function CustomerHeader() {
 
   return (
     <>
-      <header className="sticky top-0 z-50 bg-[--color-surface-container-lowest] border-b border-[--color-border] shadow-md transition-colors">
+      <header className="sticky top-0 z-50 border-b border-[--color-border] shadow-md transition-colors" style={{ backgroundColor: "var(--color-surface-container-lowest)" }}>
         <div className="max-w-[1280px] mx-auto px-4 md:px-10 h-16 flex items-center gap-3">
           {/* Brand */}
           <Link href="/" className="flex items-center gap-2 mr-auto shrink-0">
@@ -80,7 +80,7 @@ export default function CustomerHeader() {
                 
                 {/* Wrap dropdown with padding so hover doesn't break on gap */}
                 <div className="absolute right-0 top-full pt-1.5 w-48 opacity-0 pointer-events-none group-hover:opacity-100 group-hover:pointer-events-auto transition-opacity z-50">
-                  <div className="bg-[--color-surface-container-lowest] border border-[--color-border] rounded-[--radius-md] shadow-xl py-1 overflow-hidden">
+                  <div className="border border-[--color-border] rounded-[--radius-md] shadow-xl py-1 overflow-hidden" style={{ backgroundColor: "var(--color-surface-container-lowest)" }}>
                     {role === "admin" && (
                       <Link href="/admin" className="block px-4 py-2 text-sm font-bold text-[--color-primary] bg-[--color-surface-container-low] hover:bg-[--color-surface-container]">
                         Admin Dashboard

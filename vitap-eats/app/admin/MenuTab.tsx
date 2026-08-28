@@ -37,7 +37,7 @@ function ItemModal({
 }) {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-      <div className="bg-[--color-surface-container-lowest] rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden">
+      <div className="rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden" style={{ backgroundColor: "var(--color-surface-container-lowest)" }}>
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-[--color-border]">
           <h3 className="font-bold text-lg text-[--color-on-surface]">{title}</h3>
@@ -157,8 +157,10 @@ export function MenuTab() {
     }
   }, []);
 
-  useEffect(() => { fetchRestaurants(); }, [fetchRestaurants]);
-  useEffect(() => { if (selectedRestId) fetchMenu(selectedRestId); }, [selectedRestId, fetchMenu]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  useEffect(() => { fetchRestaurants(); }, []);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  useEffect(() => { if (selectedRestId) fetchMenu(selectedRestId); }, [selectedRestId]);
 
   // ── Form helpers ──────────────────────────────────────────────────────
   const openAdd = () => {
