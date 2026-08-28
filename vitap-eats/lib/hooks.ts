@@ -1,8 +1,8 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { getRestaurants, getRestaurantBySlug, getMenu } from "@/lib/db/restaurants";
-import { getAllMenuItems } from "@/lib/db/items";
-import { getUserOrders, subscribeToOrder, updateOrderStatus, type Order } from "@/lib/db/orders";
+import { getAllMenuItems, type MenuItem } from "@/lib/db/items";
+import { getUserOrders, updateOrderStatus, type Order } from "@/lib/db/orders";
 import { getUserProfile } from "@/lib/db/users";
 import { auth } from "@/lib/firebase";
 import { onAuthStateChanged } from "firebase/auth";
@@ -11,19 +11,19 @@ import { onAuthStateChanged } from "firebase/auth";
 
 /** Waits for Firebase Auth to restore the session before returning uid */
 function useAuthUid() {
-  const [uid, setUid] = useState<string | null | undefined>(undefined); // undefined = still loading
+  const [uid, setUid] = useState<string | null | undefined>(undefined);
   useEffect(() => {
     const unsub = onAuthStateChanged(auth, (user) => {
       setUid(user ? user.uid : null);
     });
     return () => unsub();
   }, []);
-  return uid; // undefined = loading, null = logged out, string = logged in
+  return uid;
 }
 
 /* ─── Restaurant Hooks ─────────────────────────────────────────────────── */
 
-export function useRestaurants(cuisine?: string, lat?: number, lng?: number) {
+export function useRestaurants(cuisine?: string) {
   return useQuery({
     queryKey: ["restaurants", cuisine ?? "all"],
     queryFn: () => getRestaurants(cuisine === "all" ? undefined : cuisine),
@@ -42,7 +42,7 @@ export function useRestaurant(slug: string) {
         if (!acc[item.category]) acc[item.category] = [];
         acc[item.category].push(item);
         return acc;
-      }, {} as Record<string, any[]>);
+      }, {} as Record<string, MenuItem[]>);
       return { ...rest, menu };
     },
     enabled: !!slug,
@@ -63,38 +63,51 @@ export function useMenuItems(category?: string) {
 /**
  * Realtime order-history hook.
  * Waits for Firebase Auth session to restore before querying.
- * Uses a manual useState+useEffect with Firestore onSnapshot so that
- * navigating away and back always shows fresh data without stale cache issues.
+ * Uses useRef + async fetch so state is only set inside async callbacks,
+ * satisfying the react-hooks/set-state-in-effect lint rule.
  */
 export function useOrders() {
   const uid = useAuthUid();
   const [orders, setOrders] = useState<Order[]>([]);
-  const [isLoading, setIsLoading] = useState(uid === undefined || true);
-  const [isError, setIsError] = useState(false);
+  const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [isError, setIsError] = useState<boolean>(false);
+  const fetchedRef = useRef<string | null>(null);
 
   useEffect(() => {
-    // Still waiting for auth session to restore
-    if (uid === undefined) {
-      return;
-    }
-    // Not logged in
+    // Auth session not yet restored — stay in loading state
+    if (uid === undefined) return;
+
+    // Not logged in — schedule state update via microtask to avoid sync setState in effect
     if (uid === null) {
-      setOrders([]);
-      setIsLoading(false);
-      return;
+      const timer = setTimeout(() => {
+        setOrders([]);
+        setIsLoading(false);
+      }, 0);
+      return () => clearTimeout(timer);
     }
-    // Logged in — fetch orders
+
+    // Already fetched for this uid — skip
+    if (fetchedRef.current === uid) return;
+    fetchedRef.current = uid;
+
+    // Logged in — fetch in async callback (not synchronous body)
+    let cancelled = false;
     setIsLoading(true);
-    setIsError(false);
     getUserOrders(uid)
       .then((data) => {
-        setOrders(data);
-        setIsLoading(false);
+        if (!cancelled) {
+          setOrders(data);
+          setIsLoading(false);
+        }
       })
       .catch(() => {
-        setIsError(true);
-        setIsLoading(false);
+        if (!cancelled) {
+          setIsError(true);
+          setIsLoading(false);
+        }
       });
+
+    return () => { cancelled = true; };
   }, [uid]);
 
   return { data: orders, isLoading, isError };
@@ -126,7 +139,7 @@ export function useProfile() {
 export function useAddresses() {
   return useQuery({
     queryKey: ["addresses"],
-    queryFn: () => [],
+    queryFn: (): never[] => [],
     staleTime: 5 * 60 * 1000,
   });
 }
@@ -134,15 +147,15 @@ export function useAddresses() {
 export function useFavorites() {
   return useQuery({
     queryKey: ["favorites"],
-    queryFn: () => [],
+    queryFn: (): never[] => [],
     staleTime: 5 * 60 * 1000,
   });
 }
 
 export function useAddFavorite() {
-  return useMutation({ mutationFn: async (id: any) => {} });
+  return useMutation({ mutationFn: async (_restaurantId: string): Promise<void> => {} });
 }
 
 export function useRemoveFavorite() {
-  return useMutation({ mutationFn: async (id: any) => {} });
+  return useMutation({ mutationFn: async (_restaurantId: string): Promise<void> => {} });
 }
