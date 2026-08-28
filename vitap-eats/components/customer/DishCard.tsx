@@ -10,10 +10,13 @@ export function DishCard({
   dish,
   restaurantId,
   restaurantName,
+  onConflict,
 }: {
   dish: MenuItem;
   restaurantId: string;
   restaurantName: string;
+  /** Called instead of adding when the cart has items from a different restaurant. */
+  onConflict?: (conflictName: string, retry: () => void) => void;
 }) {
   const { items, add, update } = useCartStore();
 
@@ -28,10 +31,15 @@ export function DishCard({
   const cartItem = items.find((i) => i.cartKey === cartKey);
   const qty = cartItem?.quantity ?? 0;
 
-  const handleAdd = () =>
-    add({ id: dish.id, restaurantId, restaurantName, name: dish.name, price: effectivePrice, image: dish.imageUrl, variantLabel });
-  const handleIncrease = () =>
-    add({ id: dish.id, restaurantId, restaurantName, name: dish.name, price: effectivePrice, image: dish.imageUrl, variantLabel });
+  const tryAdd = () => {
+    const ok = add({ id: dish.id, restaurantId, restaurantName, name: dish.name, price: effectivePrice, image: dish.imageUrl, variantLabel });
+    if (!ok) {
+      const conflictName = items[0]?.restaurantName ?? "another restaurant";
+      onConflict?.(conflictName, tryAdd);
+    }
+  };
+  const handleAdd = tryAdd;
+  const handleIncrease = tryAdd;
   const handleDecrease = () => update(cartKey, qty - 1);
 
   return (

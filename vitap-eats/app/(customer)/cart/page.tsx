@@ -111,7 +111,7 @@ export default function CartPage() {
         {/* Items list */}
         <div className="flex-1 space-y-3">
           {items.map((item) => (
-            <div key={item.id} className="flex items-center gap-3 bg-[--color-surface-container-lowest] p-3 rounded-[--radius-lg] shadow-[--shadow-sm] border border-[--color-border]">
+            <div key={item.cartKey} className="flex items-center gap-3 bg-[--color-surface-container-lowest] p-3 rounded-[--radius-lg] shadow-[--shadow-sm] border border-[--color-border]">
               {item.image && (
                 <div className="relative w-16 h-14 rounded-[--radius-md] overflow-hidden shrink-0">
                   <Image src={item.image} alt={item.name} fill sizes="64px" className="object-cover" />
@@ -128,7 +128,7 @@ export default function CartPage() {
               {/* Stepper */}
               <div className="flex items-center gap-2 shrink-0">
                 <button
-                  onClick={() => update(item.id, item.quantity - 1)}
+                  onClick={() => update(item.cartKey, item.quantity - 1)}
                   className="w-7 h-7 rounded-full border-2 flex items-center justify-center transition-colors hover:bg-[--color-primary] hover:border-[--color-primary] hover:text-white"
                   style={{ borderColor: "var(--color-primary)", color: "var(--color-primary)" }}
                 >
@@ -136,7 +136,7 @@ export default function CartPage() {
                 </button>
                 <span className="font-bold w-5 text-center tabular-nums text-sm">{item.quantity}</span>
                 <button
-                  onClick={() => update(item.id, item.quantity + 1)}
+                  onClick={() => update(item.cartKey, item.quantity + 1)}
                   className="w-7 h-7 rounded-full flex items-center justify-center text-white transition-colors hover:opacity-80"
                   style={{ background: "var(--color-primary)" }}
                 >
@@ -146,7 +146,7 @@ export default function CartPage() {
 
               <span className="font-bold tabular-nums text-sm w-16 text-right">{rupees(item.price * item.quantity)}</span>
 
-              <button onClick={() => remove(item.id)} className="text-[--color-error] hover:opacity-70 transition-opacity ml-1">
+              <button onClick={() => remove(item.cartKey)} className="text-[--color-error] hover:opacity-70 transition-opacity ml-1">
                 <Trash2 size={16} />
               </button>
             </div>

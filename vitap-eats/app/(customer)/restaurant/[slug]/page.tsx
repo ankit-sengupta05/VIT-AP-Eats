@@ -14,9 +14,17 @@ export default function RestaurantPage({ params }: { params: Promise<{ slug: str
   const { slug } = use(params);
   const { data, isLoading, isError } = useRestaurant(slug);
   const [activeSection, setActiveSection] = useState<string>("");
-  const { count, total } = useCartStore();
+  const { count, total, clear } = useCartStore();
   const cartCount = count();
   const cartTotal = total();
+  const [conflict, setConflict] = useState<{ name: string; retry: () => void } | null>(null);
+
+  const handleConflict = (conflictName: string, retry: () => void) => setConflict({ name: conflictName, retry });
+  const confirmClearAndAdd = () => {
+    clear();
+    conflict?.retry();
+    setConflict(null);
+  };
 
   if (isLoading) {
     return (
@@ -103,13 +111,34 @@ export default function RestaurantPage({ params }: { params: Promise<{ slug: str
               <div key={cat} className={cn(currentSection !== cat && "hidden md:block")}>
                 <h2 className="text-lg font-bold text-[--color-on-surface] mb-2 mt-4 first:mt-0" style={{ fontFamily: "var(--font-heading)" }}>{cat}</h2>
                 {items.map((dish: any) => (
-                  <DishCard key={dish.id} dish={dish} restaurantId={restaurant.id} restaurantName={restaurant.name} />
+                  <DishCard key={dish.id} dish={dish} restaurantId={restaurant.id} restaurantName={restaurant.name} onConflict={handleConflict} />
                 ))}
               </div>
             ))}
           </div>
         </div>
       </div>
+
+      {conflict && (
+        <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+          <div className="bg-[--color-surface-container-lowest] w-full max-w-sm rounded-[--radius-lg] shadow-[--shadow-xl] p-6 border border-[--color-border]">
+            <h3 className="text-lg font-bold text-[--color-on-surface] mb-2" style={{ fontFamily: "var(--font-heading)" }}>
+              Start a new cart?
+            </h3>
+            <p className="text-sm text-[--color-on-surface-variant] mb-6">
+              Your cart already has items from <strong>{conflict.name}</strong>. Adding this item will clear your current cart.
+            </p>
+            <div className="flex gap-3">
+              <button onClick={() => setConflict(null)} className="flex-1 py-2.5 rounded-[--radius-md] border border-[--color-border] font-semibold text-sm text-[--color-on-surface] hover:bg-[--color-surface-container-low]">
+                Keep cart
+              </button>
+              <button onClick={confirmClearAndAdd} className="flex-1 py-2.5 rounded-[--radius-md] text-white font-bold text-sm hover:opacity-90" style={{ background: "var(--color-error, #d32f2f)" }}>
+                Clear & add
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {cartCount > 0 && (
         <div className="fixed bottom-0 md:bottom-4 inset-x-0 md:inset-x-auto md:left-1/2 md:-translate-x-1/2 md:w-auto z-50 px-0 md:px-4">
