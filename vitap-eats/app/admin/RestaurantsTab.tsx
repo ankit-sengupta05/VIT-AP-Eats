@@ -230,8 +230,8 @@ export function RestaurantsTab() {
         toast.success("Restaurant updated!");
       } else {
         const payloadWithReviewCount = { ...payload, reviewCount: 0 };
-        const id = await addRestaurant(payloadWithReviewCount as Restaurant);
-        setRestaurants(prev => [...prev, { id, ...payloadWithReviewCount } as Restaurant]);
+        const id = await addRestaurant(payloadWithReviewCount as unknown as Omit<Restaurant, "id">);
+        setRestaurants(prev => [...prev, { id, ...payloadWithReviewCount } as unknown as Restaurant]);
         toast.success("Restaurant created!");
       }
       setShowModal(false);

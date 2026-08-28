@@ -11,7 +11,7 @@ export function DishCard({ dish, restaurantId, restaurantName }: { dish: MenuIte
 
   const hasVariants = dish.variants && dish.variants.length > 0;
   const [selectedVariant, setSelectedVariant] = useState<MenuItemVariant | null>(
-    hasVariants ? dish.variants[0] : null
+    hasVariants && dish.variants ? dish.variants[0] : null
   );
 
   const effectivePrice = selectedVariant ? selectedVariant.price : dish.price;
@@ -65,12 +65,12 @@ export function DishCard({ dish, restaurantId, restaurantName }: { dish: MenuIte
             <select
               value={selectedVariant?.label ?? ""}
               onChange={(e) => {
-                const v = dish.variants.find((v: MenuItemVariant) => v.label === e.target.value);
+                const v = dish.variants?.find((v: MenuItemVariant) => v.label === e.target.value);
                 setSelectedVariant(v ?? null);
               }}
               className="appearance-none pl-2 pr-7 py-1 text-xs font-semibold rounded-md border border-[--color-border] bg-[--color-surface-container-low] text-[--color-on-surface] focus:outline-none focus:ring-1 focus:ring-[--color-primary] cursor-pointer"
             >
-              {dish.variants.map((v: MenuItemVariant) => (
+              {dish.variants?.map((v: MenuItemVariant) => (
                 <option key={v.label} value={v.label}>{v.label} — ₹{v.price}</option>
               ))}
             </select>

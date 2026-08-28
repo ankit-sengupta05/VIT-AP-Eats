@@ -153,9 +153,9 @@ export function useFavorites() {
 }
 
 export function useAddFavorite() {
-  return useMutation({ mutationFn: async (): Promise<void> => {} });
+  return useMutation({ mutationFn: async (_id: string): Promise<void> => {} });
 }
 
 export function useRemoveFavorite() {
-  return useMutation({ mutationFn: async (): Promise<void> => {} });
+  return useMutation({ mutationFn: async (_id: string): Promise<void> => {} });
 }
