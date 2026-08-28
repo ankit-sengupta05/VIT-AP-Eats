@@ -3,6 +3,7 @@
 **Companion docs:** `prd.md`, `techstack.md`
 
 ---
+---
 
 ## 1. Why this palette
 
