@@ -3,7 +3,7 @@ import { useState, useEffect, useCallback } from "react";
 import { Loader2, Plus, Edit2, Trash2, ToggleLeft, ToggleRight, Search, X, Check } from "lucide-react";
 import toast from "react-hot-toast";
 import { rupees, cn } from "@/lib/utils";
-import { getRestaurants, type Restaurant } from "@/lib/db/restaurants";
+import { getRestaurants, getAllRestaurants, type Restaurant } from "@/lib/db/restaurants";
 import {
   getMenuByRestaurant, addMenuItem, updateMenuItem, deleteMenuItem, type MenuItem,
 } from "@/lib/db/items";
@@ -137,7 +137,7 @@ export function MenuTab() {
 
   const fetchRestaurants = useCallback(async () => {
     try {
-      const data = await getRestaurants();
+      const data = await getAllRestaurants();
       setRestaurants(data);
       if (data.length > 0) setSelectedRestId(data[0].id);
     } catch {

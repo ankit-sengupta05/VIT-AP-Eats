@@ -39,6 +39,13 @@ export async function getRestaurants(cuisine?: string): Promise<Restaurant[]> {
   return snap.docs.map((d) => ({ id: d.id, ...d.data() } as Restaurant));
 }
 
+export async function getAllRestaurants(): Promise<Restaurant[]> {
+  const col = collection(db, "restaurants");
+  const q = query(col, orderBy("name", "asc"));
+  const snap = await getDocs(q);
+  return snap.docs.map((d) => ({ id: d.id, ...d.data() } as Restaurant));
+}
+
 export async function getRestaurantBySlug(slug: string): Promise<Restaurant | null> {
   const q = query(collection(db, "restaurants"), where("slug", "==", slug), limit(1));
   const snap = await getDocs(q);

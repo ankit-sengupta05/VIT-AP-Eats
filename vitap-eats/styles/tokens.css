@@ -66,12 +66,12 @@
 /* --- Dark Mode Auto-Detection --- */
 @media (prefers-color-scheme: dark) {
   :root {
-    --color-bg: #09090b;
-    --color-surface: #18181b;
-    --color-surface-container-lowest: #000000;
-    --color-surface-container-low: #18181b;
-    --color-surface-container: #27272a;
-    --color-surface-container-high: #3f3f46;
+    --color-bg: #121212;
+    --color-surface: #1e1e1e;
+    --color-surface-container-lowest: #242424;
+    --color-surface-container-low: #2c2c2c;
+    --color-surface-container: #333333;
+    --color-surface-container-high: #383838;
     
     /* Ensure text is white/light-gray in dark mode for contrast */
     --color-on-surface: #f9fafb;
