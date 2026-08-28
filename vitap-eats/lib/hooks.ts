@@ -69,13 +69,12 @@ export function useMenuItems(category?: string) {
 export function useOrders() {
   const uid = useAuthUid();
   const [orders, setOrders] = useState<Order[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(uid === undefined || true);
   const [isError, setIsError] = useState(false);
 
   useEffect(() => {
     // Still waiting for auth session to restore
     if (uid === undefined) {
-      setIsLoading(true);
       return;
     }
     // Not logged in

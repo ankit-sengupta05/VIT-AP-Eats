@@ -2,7 +2,7 @@
 import { useEffect, useState, useRef, use } from "react";
 import {
   CheckCircle2, Circle, Clock, MapPin, Phone, Bike, Loader2,
-  XCircle, AlertTriangle, Wifi, WifiOff, Share2, ReceiptText, RotateCcw
+  XCircle, AlertTriangle, Wifi, WifiOff, Share2, ReceiptText, RotateCcw, Package
 } from "lucide-react";
 import { cn, rupees } from "@/lib/utils";
 import Link from "next/link";
