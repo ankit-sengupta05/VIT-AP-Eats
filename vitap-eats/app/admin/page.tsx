@@ -1,6 +1,7 @@
 "use client";
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { TrendingUp, ShoppingBag, Star, Bike, Loader2, Lock, Users, Store } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Toaster } from "react-hot-toast";
@@ -87,9 +88,9 @@ export default function AdminPage() {
           ))}
         </nav>
         <div className="p-3 border-t border-[--color-border]">
-          <a href="/" className="w-full flex items-center gap-2 px-3 py-2 rounded-md text-sm text-[--color-on-surface-variant] hover:bg-[--color-surface-container-low] transition-colors">
+          <Link href="/" className="w-full flex items-center gap-2 px-3 py-2 rounded-md text-sm text-[--color-on-surface-variant] hover:bg-[--color-surface-container-low] transition-colors">
             ← Back to Site
-          </a>
+          </Link>
         </div>
       </aside>
 

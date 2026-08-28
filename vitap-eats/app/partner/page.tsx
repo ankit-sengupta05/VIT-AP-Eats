@@ -3,8 +3,8 @@ import { useState } from "react";
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import {
-  TrendingUp, Bike, CheckCircle2, Clock, Star, MapPin,
-  Bell, ToggleLeft, ToggleRight, Loader2, ChevronRight, Banknote
+  TrendingUp, Bike,
+  Bell, ToggleLeft, ToggleRight, Loader2
 } from "lucide-react";
 import { rupees, cn } from "@/lib/utils";
 import toast, { Toaster } from "react-hot-toast";

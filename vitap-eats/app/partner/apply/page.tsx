@@ -58,8 +58,9 @@ export default function PartnerApplyPage() {
       // Re-fetch to show pending state
       const app = await getMyApplication(user.uid);
       setExisting(app);
-    } catch (err: any) {
-      toast.error(err.message ?? "Submission failed. Please try again.");
+    } catch (err) {
+      const error = err as Error;
+      toast.error(error.message ?? "Submission failed. Please try again.");
     } finally {
       setSubmitting(false);
     }

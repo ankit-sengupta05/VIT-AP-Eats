@@ -7,6 +7,7 @@ import { getRestaurants, getAllRestaurants, type Restaurant } from "@/lib/db/res
 import {
   getMenuByRestaurant, addMenuItem, updateMenuItem, deleteMenuItem, type MenuItem, type MenuItemVariant,
 } from "@/lib/db/items";
+import Image from "next/image";
 
 // ── Form defaults ──────────────────────────────────────────────────────────
 const EMPTY_FORM = {
@@ -322,8 +323,9 @@ export function MenuTab() {
         toast.success("Item added!");
       }
       setShowModal(false);
-    } catch (err: any) {
-      toast.error(err.message ?? "Save failed");
+    } catch (err) {
+      const error = err as Error;
+      toast.error(error.message ?? "Save failed");
     } finally {
       setSaving(false);
     }
@@ -336,8 +338,9 @@ export function MenuTab() {
       await deleteMenuItem(item.id);
       setMenu(prev => prev.filter(m => m.id !== item.id));
       toast.success(`"${item.name}" deleted`);
-    } catch (err: any) {
-      toast.error(err.message ?? "Delete failed");
+    } catch (err) {
+      const error = err as Error;
+      toast.error(error.message ?? "Delete failed");
     } finally {
       setDeletingId(null);
     }
@@ -444,8 +447,8 @@ export function MenuTab() {
                       !item.isAvailable ? "border-[--color-border] opacity-60" : "border-[--color-border] shadow-[--shadow-sm] hover:border-[--color-primary]"
                     )}
                   >
-                    <div className="w-16 h-16 rounded-md flex items-center justify-center text-xs font-bold shrink-0 overflow-hidden bg-[--color-surface-container-low] text-[--color-on-surface-variant]">
-                      {item.imageUrl ? <img src={item.imageUrl} alt={item.name} className="w-full h-full object-cover rounded-md" /> : "No Img"}
+                    <div className="relative w-16 h-16 rounded-md flex items-center justify-center text-xs font-bold shrink-0 overflow-hidden bg-[--color-surface-container-low] text-[--color-on-surface-variant]">
+                      {item.imageUrl ? <Image src={item.imageUrl} alt={item.name} fill sizes="64px" className="object-cover" /> : "No Img"}
                     </div>
                     <div className="flex-1 min-w-0 flex flex-col justify-between">
                       <div>

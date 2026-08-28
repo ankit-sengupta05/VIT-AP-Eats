@@ -7,6 +7,7 @@ import {
   getAllRestaurants, addRestaurant, updateRestaurant, deleteRestaurant, type Restaurant,
 } from "@/lib/db/restaurants";
 import { serverTimestamp } from "firebase/firestore";
+import Image from "next/image";
 
 // ── Form defaults ──────────────────────────────────────────────────────────
 const EMPTY_FORM = {
@@ -191,8 +192,8 @@ export function RestaurantsTab() {
       imageUrl:     rest.imageUrl ?? "",
       isOpen:       rest.isOpen ?? true,
       isVeg:        rest.isVeg ?? false,
-      phone:        (rest as any).phone ?? "",
-      address:      (rest as any).address ?? "",
+      phone:        (rest as Restaurant & { phone?: string }).phone ?? "",
+      address:      (rest as Restaurant & { address?: string }).address ?? "",
       partnerId:    rest.partnerId ?? "",
     });
     setShowModal(true);
@@ -229,13 +230,14 @@ export function RestaurantsTab() {
         toast.success("Restaurant updated!");
       } else {
         const payloadWithReviewCount = { ...payload, reviewCount: 0 };
-        const id = await addRestaurant(payloadWithReviewCount as any);
-        setRestaurants(prev => [...prev, { id, ...payloadWithReviewCount } as any]);
+        const id = await addRestaurant(payloadWithReviewCount as Restaurant);
+        setRestaurants(prev => [...prev, { id, ...payloadWithReviewCount } as Restaurant]);
         toast.success("Restaurant created!");
       }
       setShowModal(false);
-    } catch (err: any) {
-      toast.error(err.message ?? "Save failed");
+    } catch (err) {
+      const error = err as Error;
+      toast.error(error.message ?? "Save failed");
     } finally {
       setSaving(false);
     }
@@ -248,8 +250,9 @@ export function RestaurantsTab() {
       await deleteRestaurant(rest.id);
       setRestaurants(prev => prev.filter(r => r.id !== rest.id));
       toast.success(`"${rest.name}" deleted`);
-    } catch (err: any) {
-      toast.error(err.message ?? "Delete failed");
+    } catch (err) {
+      const error = err as Error;
+      toast.error(error.message ?? "Delete failed");
     } finally {
       setDeletingId(null);
     }
@@ -331,8 +334,8 @@ export function RestaurantsTab() {
               )}
             >
               <div className="flex gap-4 mb-3">
-                <div className="w-14 h-14 rounded-md flex items-center justify-center text-xs font-bold shrink-0 overflow-hidden bg-[--color-surface-container-low] text-[--color-on-surface-variant]">
-                  {rest.imageUrl ? <img src={rest.imageUrl} alt={rest.name} className="w-full h-full object-cover rounded-md" /> : "No Img"}
+                <div className="relative w-14 h-14 rounded-md flex items-center justify-center text-xs font-bold shrink-0 overflow-hidden bg-[--color-surface-container-low] text-[--color-on-surface-variant]">
+                  {rest.imageUrl ? <Image src={rest.imageUrl} alt={rest.name} fill sizes="56px" className="object-cover" /> : "No Img"}
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-1.5">

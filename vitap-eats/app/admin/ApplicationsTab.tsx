@@ -52,8 +52,9 @@ export function ApplicationsTab() {
         }
       );
       return () => unsub();
-    } catch (err: any) {
-      setError(`Setup error: ${err.message}`);
+    } catch (err) {
+      const error = err as Error;
+      setError(`Setup error: ${error.message}`);
       setLoading(false);
     }
   }, []);
@@ -79,8 +80,9 @@ export function ApplicationsTab() {
         createdAt: serverTimestamp(),
       });
       toast.success(`✅ "${app.restaurantName}" approved and added to the platform!`);
-    } catch (err: any) {
-      toast.error(err.message ?? "Failed to approve");
+    } catch (err) {
+      const error = err as Error;
+      toast.error(error.message ?? "Failed to approve");
     } finally {
       setProcessingId(null);
       setNoteFor(null);
@@ -93,8 +95,9 @@ export function ApplicationsTab() {
     try {
       await updateApplicationStatus(appId, "declined", note || undefined);
       toast.success(`Declined application for "${restaurantName}"`);
-    } catch (err: any) {
-      toast.error(err.message ?? "Failed to decline");
+    } catch (err) {
+      const error = err as Error;
+      toast.error(error.message ?? "Failed to decline");
     } finally {
       setProcessingId(null);
       setNoteFor(null);

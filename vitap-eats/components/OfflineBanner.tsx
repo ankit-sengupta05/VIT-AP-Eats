@@ -16,11 +16,12 @@ export function OfflineBanner() {
       setTimeout(() => setIsOffline(false), 2500);
     };
 
-    setIsOffline(!navigator.onLine);
+    const t = setTimeout(() => setIsOffline(!navigator.onLine), 0);
 
     window.addEventListener("offline", handleOffline);
     window.addEventListener("online", handleOnline);
     return () => {
+      clearTimeout(t);
       window.removeEventListener("offline", handleOffline);
       window.removeEventListener("online", handleOnline);
     };

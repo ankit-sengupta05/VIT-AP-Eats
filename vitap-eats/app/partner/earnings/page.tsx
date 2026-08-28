@@ -1,7 +1,7 @@
 "use client";
 import { useState } from "react";
 import { rupees } from "@/lib/utils";
-import { Banknote, Clock, ChevronLeft, TrendingUp, PackageCheck } from "lucide-react";
+import { Clock, ChevronLeft, TrendingUp, PackageCheck } from "lucide-react";
 import Link from "next/link";
 
 interface EarningRecord {
