@@ -13,7 +13,7 @@ export type AnalyticsEvent =
   | "order_status_viewed";
 
 export function useAnalytics() {
-  const track = useCallback((event: AnalyticsEvent, properties?: Record<string, any>) => {
+  const track = useCallback((event: AnalyticsEvent, properties?: Record<string, unknown>) => {
     // Development logging
     if (process.env.NODE_ENV === "development") {
       console.log(`[Analytics] 📊 Event: ${event}`, properties || "");

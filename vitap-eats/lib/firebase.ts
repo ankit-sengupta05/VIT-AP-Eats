@@ -27,7 +27,7 @@ let storage: FirebaseStorage;
 
 if (isConfigured) {
   // Prevent re-initialising on hot-reload in development
-  app = getApps().length ? getApps()[0] : initializeApp(firebaseConfig as any);
+  app = getApps().length ? getApps()[0] : initializeApp(firebaseConfig as Record<string, string>);
   auth    = getAuth(app);
   db      = getFirestore(app);
   storage = getStorage(app);
