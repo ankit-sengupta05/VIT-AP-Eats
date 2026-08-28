@@ -6,7 +6,15 @@ import { useCartStore } from "@/lib/store/cart";
 import { cn } from "@/lib/utils";
 import type { MenuItem, MenuItemVariant } from "@/lib/db/items";
 
-export function DishCard({ dish, restaurantId, restaurantName }: { dish: MenuItem; restaurantId: string; restaurantName: string }) {
+export function DishCard({
+  dish,
+  restaurantId,
+  restaurantName,
+}: {
+  dish: MenuItem;
+  restaurantId: string;
+  restaurantName: string;
+}) {
   const { items, add, update } = useCartStore();
 
   const hasVariants = dish.variants && dish.variants.length > 0;
@@ -16,87 +24,177 @@ export function DishCard({ dish, restaurantId, restaurantName }: { dish: MenuIte
 
   const effectivePrice = selectedVariant ? selectedVariant.price : dish.price;
   const variantLabel = selectedVariant?.label ?? undefined;
-
   const cartKey = `${dish.id}__${variantLabel ?? "default"}`;
   const cartItem = items.find((i) => i.cartKey === cartKey);
   const qty = cartItem?.quantity ?? 0;
 
-  const handleAdd = () => {
-    add({
-      id: dish.id,
-      restaurantId,
-      restaurantName,
-      name: dish.name,
-      price: effectivePrice,
-      image: dish.imageUrl,
-      variantLabel,
-    });
-  };
-
-  const handleIncrease = () => {
-    add({
-      id: dish.id,
-      restaurantId,
-      restaurantName,
-      name: dish.name,
-      price: effectivePrice,
-      image: dish.imageUrl,
-      variantLabel,
-    });
-  };
-
-  const handleDecrease = () => {
-    update(cartKey, qty - 1);
-  };
+  const handleAdd = () =>
+    add({ id: dish.id, restaurantId, restaurantName, name: dish.name, price: effectivePrice, image: dish.imageUrl, variantLabel });
+  const handleIncrease = () =>
+    add({ id: dish.id, restaurantId, restaurantName, name: dish.name, price: effectivePrice, image: dish.imageUrl, variantLabel });
+  const handleDecrease = () => update(cartKey, qty - 1);
 
   return (
-    <div className="flex gap-3 py-4 border-b border-[--color-border] last:border-0">
-      <div className="flex-1 min-w-0">
+    <div
+      className="flex gap-3 items-start py-4"
+      style={{ borderBottom: "1px solid var(--color-border)" }}
+    >
+      {/* ── Left: text ── */}
+      <div className="flex-1 min-w-0 pr-1">
+        {/* Veg/non-veg dot */}
         <div className="flex items-center gap-1.5 mb-1">
-          <span className={cn("w-3.5 h-3.5 rounded-sm border-2 flex items-center justify-center", dish.isVeg ? "border-green-600" : "border-red-500")}>
-            <span className={cn("w-1.5 h-1.5 rounded-full", dish.isVeg ? "bg-green-600" : "bg-red-500")} />
+          <span
+            className={cn(
+              "w-3.5 h-3.5 rounded-sm border-2 flex items-center justify-center shrink-0",
+              dish.isVeg ? "border-green-600" : "border-red-500"
+            )}
+          >
+            <span
+              className={cn("w-1.5 h-1.5 rounded-full", dish.isVeg ? "bg-green-600" : "bg-red-500")}
+            />
           </span>
+          {/* Bestseller badge */}
+          {dish.rating && dish.rating >= 4.7 && (
+            <span
+              className="text-[10px] font-bold px-1.5 py-0.5 tracking-wide uppercase"
+              style={{
+                background: "var(--color-primary-fixed)",
+                color: "var(--color-primary)",
+                borderRadius: "var(--radius-full)",
+              }}
+            >
+              Bestseller
+            </span>
+          )}
         </div>
-        <h4 className="font-semibold text-[--color-on-surface] text-sm mb-0.5">{dish.name}</h4>
-        <p className="text-xs text-[--color-on-surface-variant] line-clamp-2 mb-2">{dish.description}</p>
 
+        <h4
+          className="font-bold text-sm leading-tight mb-0.5"
+          style={{ fontFamily: "var(--font-heading)", color: "var(--color-on-surface)" }}
+        >
+          {dish.name}
+        </h4>
+        <p
+          className="text-xs line-clamp-2 mb-2 leading-relaxed"
+          style={{ color: "var(--color-on-surface-variant)" }}
+        >
+          {dish.description}
+        </p>
+
+        {/* Variant selector */}
         {hasVariants && (
-          <div className="relative inline-block mb-2">
+          <div className="relative inline-flex items-center mb-2">
             <select
               value={selectedVariant?.label ?? ""}
               onChange={(e) => {
                 const v = dish.variants?.find((v: MenuItemVariant) => v.label === e.target.value);
                 setSelectedVariant(v ?? null);
               }}
-              className="appearance-none pl-2 pr-7 py-1 text-xs font-semibold rounded-md border border-[--color-border] bg-[--color-surface-container-low] text-[--color-on-surface] focus:outline-none focus:ring-1 focus:ring-[--color-primary] cursor-pointer"
+              className="appearance-none pl-3 pr-7 py-1 text-xs font-semibold cursor-pointer"
+              style={{
+                background: "var(--color-surface-container-lowest)",
+                border: "1.5px solid var(--color-border)",
+                borderRadius: "var(--radius-full)",
+                color: "var(--color-on-surface)",
+              }}
             >
               {dish.variants?.map((v: MenuItemVariant) => (
-                <option key={v.label} value={v.label}>{v.label} — ₹{v.price}</option>
+                <option key={v.label} value={v.label}>
+                  {v.label} — ₹{v.price}
+                </option>
               ))}
             </select>
-            <ChevronDown size={12} className="absolute right-2 top-1/2 -translate-y-1/2 text-[--color-on-surface-variant] pointer-events-none" />
+            <ChevronDown
+              size={11}
+              className="absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none"
+              style={{ color: "var(--color-on-surface-variant)" }}
+            />
           </div>
         )}
 
-        <span className="font-bold tabular-nums text-[--color-on-surface]">₹{effectivePrice}</span>
+        {/* Price */}
+        <span
+          className="font-extrabold tabular-nums"
+          style={{ fontSize: "0.9rem", color: "var(--color-on-surface)" }}
+        >
+          ₹{effectivePrice}
+        </span>
       </div>
 
+      {/* ── Right: image + add button ── */}
       <div className="shrink-0 flex flex-col items-center gap-2">
-        <div className="relative w-24 h-20 rounded-[--radius-md] overflow-hidden bg-[--color-surface-container]">
-          {dish.imageUrl && <Image src={dish.imageUrl} alt={dish.name} fill sizes="96px" className="object-cover" />}
+        {/* Circular-ish image */}
+        <div
+          className="relative overflow-hidden"
+          style={{
+            width: 96,
+            height: 80,
+            borderRadius: "var(--radius-lg)",
+            background: "var(--color-surface-container)",
+            border: "1px solid var(--color-border)",
+          }}
+        >
+          {dish.imageUrl ? (
+            <Image
+              src={dish.imageUrl}
+              alt={dish.name}
+              fill
+              sizes="96px"
+              className="object-cover"
+            />
+          ) : (
+            <div className="w-full h-full flex items-center justify-center text-2xl">🍽️</div>
+          )}
         </div>
+
+        {/* ADD / qty stepper */}
         {qty === 0 ? (
           <button
             onClick={handleAdd}
-            className="w-24 h-8 text-xs font-bold rounded-[--radius-md] border-2 bg-white hover:bg-[--color-primary] hover:text-white hover:border-[--color-primary] transition-all"
-            style={{ borderColor: "var(--color-primary)", color: "var(--color-primary)" }}>
-            ADD
+            className="font-bold text-xs tracking-wide"
+            style={{
+              width: 96,
+              height: 32,
+              borderRadius: "var(--radius-full)",
+              background: "var(--color-surface-container-lowest)",
+              border: "2px solid var(--color-primary)",
+              color: "var(--color-primary)",
+              fontFamily: "var(--font-heading)",
+            }}
+          >
+            + ADD
           </button>
         ) : (
-          <div className="w-24 h-8 flex items-center justify-between rounded-[--radius-md] px-1.5" style={{ background: "var(--color-primary)" }}>
-            <button onClick={handleDecrease} className="text-white p-0.5 hover:opacity-80"><Minus size={14} /></button>
-            <span className="text-white font-bold text-sm tabular-nums">{qty}</span>
-            <button onClick={handleIncrease} className="text-white p-0.5 hover:opacity-80"><Plus size={14} /></button>
+          <div
+            className="flex items-center justify-between"
+            style={{
+              width: 96,
+              height: 32,
+              borderRadius: "var(--radius-full)",
+              background: "var(--color-primary)",
+              paddingInline: "0.375rem",
+            }}
+          >
+            <button
+              onClick={handleDecrease}
+              className="flex items-center justify-center"
+              style={{ color: "var(--color-on-primary)", width: 22, height: 22 }}
+            >
+              <Minus size={13} />
+            </button>
+            <span
+              className="font-bold text-sm tabular-nums"
+              style={{ color: "var(--color-on-primary)" }}
+            >
+              {qty}
+            </span>
+            <button
+              onClick={handleIncrease}
+              className="flex items-center justify-center"
+              style={{ color: "var(--color-on-primary)", width: 22, height: 22 }}
+            >
+              <Plus size={13} />
+            </button>
           </div>
         )}
       </div>

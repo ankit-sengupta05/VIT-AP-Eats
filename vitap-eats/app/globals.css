@@ -47,19 +47,36 @@
   --shadow-primary: var(--shadow-primary);
 }
 
-/* ---- Base styles ---- */
+/* ---- Base reset ---- */
 *, *::before, *::after { box-sizing: border-box; }
 
-html { scroll-behavior: smooth; }
+html {
+  scroll-behavior: smooth;
+  /* Clamp viewport to phone width so portrait-mode feels native on desktop too */
+  background-color: #D4B48A; /* darker cream gutter on wide screens */
+}
 
 body {
   background-color: var(--color-bg);
   color: var(--color-on-surface);
   font-family: var(--font-body);
   font-size: 1rem;
-  line-height: 1.5;
+  line-height: 1.55;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  /* Portrait-mobile max-width container */
+  max-width: 480px;
+  margin: 0 auto;
+  min-height: 100dvh;
+  position: relative;
+  /* Subtle left/right shadow to show the "phone frame" on wide screens */
+  box-shadow: 0 0 60px rgba(77,8,5,0.18);
+}
+
+/* On ≥768px keep desktop layout unlimited */
+@media (min-width: 768px) {
+  html { background-color: var(--color-bg); }
+  body { max-width: 100%; box-shadow: none; }
 }
 
 h1, h2, h3, h4, h5, h6 {
@@ -67,24 +84,113 @@ h1, h2, h3, h4, h5, h6 {
   font-weight: 700;
   line-height: 1.2;
   letter-spacing: -0.01em;
+  color: var(--color-on-surface);
 }
 
-/* ---- Utilities ---- */
+/* ---- Scrollbar hide utility ---- */
 .hide-scrollbar::-webkit-scrollbar { display: none; }
 .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
 
-/* Tabular numbers for prices/ETAs */
+/* ---- Tabular numbers ---- */
 .tabular-nums { font-variant-numeric: tabular-nums; }
 
-/* Focus ring using primary color */
+/* ---- Focus ring ---- */
 :focus-visible {
   outline: 2px solid var(--color-primary);
   outline-offset: 2px;
   border-radius: var(--radius-sm);
 }
 
-/* Smooth transitions on interactive elements */
+/* ---- Micro-interactions ---- */
 button, a, [role="button"] {
-  transition: opacity 0.15s ease, transform 0.1s ease, box-shadow 0.15s ease;
+  transition: opacity 0.15s ease, transform 0.1s ease, box-shadow 0.15s ease, background-color 0.15s ease;
 }
-button:active, [role="button"]:active { transform: scale(0.97); }
+button:active, [role="button"]:active { transform: scale(0.96); }
+
+/* ---- Card base (fully opaque) ---- */
+.card {
+  background-color: var(--color-surface-container-lowest);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--color-border);
+  box-shadow: var(--shadow-md);
+}
+
+/* ---- Pill / chip ---- */
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.25rem 0.75rem;
+  border-radius: var(--radius-full);
+  font-size: 0.75rem;
+  font-weight: 600;
+  background-color: var(--color-surface-container);
+  color: var(--color-on-surface-variant);
+  border: 1px solid var(--color-border);
+}
+
+/* ---- Bottom navigation bar ---- */
+.bottom-nav {
+  position: fixed;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 100%;
+  max-width: 480px;
+  background-color: var(--color-surface-container-lowest);
+  border-top: 1px solid var(--color-border);
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+  padding: 0.5rem 0 calc(0.5rem + env(safe-area-inset-bottom));
+  z-index: 50;
+}
+@media (min-width: 768px) {
+  .bottom-nav { max-width: 100%; left: 0; transform: none; }
+}
+
+/* ---- Input base ---- */
+input, select, textarea {
+  background-color: var(--color-surface-container-lowest);
+  border: 1.5px solid var(--color-border);
+  border-radius: var(--radius-md);
+  color: var(--color-on-surface);
+  padding: 0.625rem 0.875rem;
+  font-family: var(--font-body);
+  font-size: 0.9rem;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+input:focus, select:focus, textarea:focus {
+  outline: none;
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px var(--color-primary-fixed);
+}
+
+/* ---- Primary button ---- */
+.btn-primary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  background-color: var(--color-primary);
+  color: var(--color-on-primary);
+  font-family: var(--font-heading);
+  font-weight: 700;
+  font-size: 0.875rem;
+  padding: 0.75rem 1.5rem;
+  border-radius: var(--radius-full);
+  border: none;
+  cursor: pointer;
+  box-shadow: var(--shadow-primary);
+  letter-spacing: 0.01em;
+}
+.btn-primary:hover { opacity: 0.9; box-shadow: var(--shadow-lg); }
+
+/* ---- Section heading ---- */
+.section-heading {
+  font-family: var(--font-heading);
+  font-size: 1.125rem;
+  font-weight: 800;
+  color: var(--color-on-surface);
+  letter-spacing: -0.02em;
+}

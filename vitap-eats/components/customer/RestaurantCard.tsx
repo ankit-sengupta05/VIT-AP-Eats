@@ -1,8 +1,7 @@
 import Link from "next/link";
 import Image from "next/image";
-import { Star, Bike, Heart, MapPin } from "lucide-react";
-import { Badge } from "@/components/ui/Badge";
-import { rupees, cn } from "@/lib/utils";
+import { Star, Package } from "lucide-react";
+import { cn } from "@/lib/utils";
 import { useFavorites, useAddFavorite, useRemoveFavorite } from "@/lib/hooks";
 
 export interface Restaurant {
@@ -11,15 +10,15 @@ export interface Restaurant {
   name: string;
   cuisine: string;
   rating: number;
-  deliveryTime: number;        // minutes
-  deliveryFee: number;         // 0 = free
+  deliveryTime: number;
+  deliveryFee: number;
   minOrder: number;
   image: string;
   isVeg?: boolean;
   isOpen: boolean;
   promoted?: boolean;
-  discount?: string;           // e.g. "50% OFF up to ₹100"
-  distance_meters?: number;    // From PostGIS
+  discount?: string;
+  distance_meters?: number;
 }
 
 export default function RestaurantCard({ r }: { r: Restaurant }) {
@@ -27,91 +26,163 @@ export default function RestaurantCard({ r }: { r: Restaurant }) {
   const { mutate: addFavorite } = useAddFavorite();
   const { mutate: removeFavorite } = useRemoveFavorite();
 
-  const isFavorited = favorites.some((f: { restaurant_id: string }) => f.restaurant_id === r.id);
+  const isFavorited = favorites.some(
+    (f: { restaurant_id: string }) => f.restaurant_id === r.id
+  );
 
   const handleFavoriteClick = (e: React.MouseEvent) => {
     e.preventDefault();
-    if (isFavorited) {
-      removeFavorite(r.id);
-    } else {
-      addFavorite(r.id);
-    }
+    isFavorited ? removeFavorite(r.id) : addFavorite(r.id);
   };
 
   return (
     <Link
       href={`/restaurant/${r.slug}`}
-      className="group block bg-[--color-surface-container-lowest] rounded-[--radius-lg] overflow-hidden shadow-[--shadow-md] hover:shadow-[--shadow-lg] transition-shadow"
+      className="group block overflow-hidden"
+      style={{
+        background: "var(--color-surface-container-lowest)",
+        borderRadius: "var(--radius-xl)",
+        border: "1px solid var(--color-border)",
+        boxShadow: "var(--shadow-md)",
+      }}
     >
-      {/* Thumbnail */}
-      <div className="relative w-full aspect-[16/9] overflow-hidden">
+      {/* ── Food thumbnail ── */}
+      <div className="relative w-full aspect-[4/3] overflow-hidden" style={{ borderRadius: "var(--radius-xl) var(--radius-xl) 0 0" }}>
         <Image
-          src={r.image}
+          src={r.image || "https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?w=800&q=80"}
           alt={r.name}
           fill
-          sizes="(max-width:768px) 100vw, (max-width:1280px) 50vw, 33vw"
-          className="object-cover group-hover:scale-105 transition-transform duration-300"
+          sizes="(max-width: 480px) 100vw, 50vw"
+          className="object-cover group-hover:scale-105 transition-transform duration-500"
         />
-        {/* Overlay badges */}
-        <div className="absolute top-2 left-2 flex gap-1.5 flex-wrap z-10">
-          {r.promoted && (
-            <span className="bg-[--color-primary] text-white text-[10px] font-bold px-2 py-0.5 rounded-[--radius-full] uppercase tracking-wide shadow-sm">
-              Promoted
-            </span>
-          )}
-          {r.discount && (
-            <span className="bg-[--color-inverse-surface] text-[--color-inverse-on-surface] text-[10px] font-semibold px-2 py-0.5 rounded-[--radius-full] shadow-sm">
-              {r.discount}
-            </span>
-          )}
-        </div>
 
-        {/* Favorite Button */}
-        <button
-          onClick={handleFavoriteClick}
-          className="absolute top-2 right-2 z-20 w-8 h-8 rounded-full bg-white/80 backdrop-blur-sm shadow-sm flex items-center justify-center hover:bg-white transition-colors"
-        >
-          <Heart size={16} className={cn("transition-colors", isFavorited ? "fill-red-500 text-red-500" : "text-gray-600")} />
-        </button>
-
-        {/* Closed overlay */}
+        {/* Closed overlay — fully opaque dark */}
         {!r.isOpen && (
-          <div className="absolute inset-0 bg-black/50 flex items-center justify-center z-10">
-            <span className="text-white font-bold text-lg">Closed</span>
+          <div
+            className="absolute inset-0 flex items-center justify-center"
+            style={{ background: "var(--color-primary-dark)", opacity: 0.85 }}
+          >
+            <span
+              className="font-bold text-lg tracking-widest uppercase"
+              style={{ color: "var(--color-on-primary)", fontFamily: "var(--font-heading)" }}
+            >
+              Closed
+            </span>
           </div>
         )}
+
+        {/* Promo badge */}
+        {r.discount && (
+          <span
+            className="absolute top-3 left-3 text-[11px] font-bold px-2.5 py-1 tracking-wide uppercase"
+            style={{
+              background: "var(--color-primary)",
+              color: "var(--color-on-primary)",
+              borderRadius: "var(--radius-full)",
+            }}
+          >
+            {r.discount}
+          </span>
+        )}
+
+        {/* Veg dot */}
+        {r.isVeg && (
+          <span
+            className="absolute top-3 right-3 w-6 h-6 flex items-center justify-center"
+            style={{
+              background: "var(--color-surface-container-lowest)",
+              borderRadius: "var(--radius-full)",
+              border: "1.5px solid var(--color-border)",
+            }}
+          >
+            <span className="w-3 h-3 rounded-full bg-green-600" />
+          </span>
+        )}
+
+        {/* Favourite (fully opaque cream bg) */}
+        <button
+          onClick={handleFavoriteClick}
+          aria-label="Toggle favourite"
+          className="absolute bottom-3 right-3 w-8 h-8 flex items-center justify-center"
+          style={{
+            background: "var(--color-surface-container-lowest)",
+            borderRadius: "var(--radius-full)",
+            border: "1px solid var(--color-border)",
+            boxShadow: "var(--shadow-sm)",
+          }}
+        >
+          <svg
+            viewBox="0 0 24 24"
+            className="w-4 h-4"
+            fill={isFavorited ? "var(--color-primary)" : "none"}
+            stroke={isFavorited ? "var(--color-primary)" : "var(--color-on-surface-variant)"}
+            strokeWidth={2}
+          >
+            <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
+          </svg>
+        </button>
       </div>
 
-      {/* Info */}
-      <div className="p-3">
+      {/* ── Info ── */}
+      <div className="px-4 py-3">
         <div className="flex items-start justify-between gap-2 mb-1">
-          <h3 className="font-semibold text-[--color-on-surface] leading-tight line-clamp-1" style={{ fontFamily: "var(--font-heading)" }}>
+          <h3
+            className="font-extrabold text-base leading-tight line-clamp-1 flex-1"
+            style={{ fontFamily: "var(--font-heading)", color: "var(--color-on-surface)" }}
+          >
             {r.name}
           </h3>
-          {r.isVeg && <Badge variant="veg">Veg</Badge>}
+          {/* Rating pill */}
+          <span
+            className="flex items-center gap-1 text-xs font-bold px-2 py-0.5 shrink-0"
+            style={{
+              background: "var(--color-primary)",
+              color: "var(--color-on-primary)",
+              borderRadius: "var(--radius-full)",
+            }}
+          >
+            <Star size={10} fill="currentColor" />
+            {r.rating.toFixed(1)}
+          </span>
         </div>
 
-        <p className="text-[--color-on-surface-variant] text-xs mb-2 line-clamp-1">
+        <p
+          className="text-xs line-clamp-1 mb-2"
+          style={{ color: "var(--color-on-surface-variant)" }}
+        >
           {r.cuisine}
         </p>
 
-        {/* Stats row */}
-        <div className="flex items-center gap-3 text-xs text-[--color-on-surface-variant]">
-          <span className="flex items-center gap-1 text-[--color-tertiary] font-semibold">
-            <Star size={12} fill="currentColor" />
-            {r.rating.toFixed(1)}
+        {/* Bottom row */}
+        <div
+          className="flex items-center gap-2 text-xs font-medium pt-2"
+          style={{ borderTop: "1px solid var(--color-border)", color: "var(--color-on-surface-variant)" }}
+        >
+          <span
+            className="flex items-center gap-1 px-2 py-0.5"
+            style={{
+              background: "var(--color-surface-container)",
+              borderRadius: "var(--radius-full)",
+            }}
+          >
+            <Package size={11} />
+            Main Gate
           </span>
-          <span className="flex items-center gap-1">
-            <Bike size={12} />
-            {r.deliveryFee === 0 ? "Free delivery" : rupees(r.deliveryFee)}
+          <span
+            className="flex items-center gap-1 px-2 py-0.5"
+            style={{
+              background: "var(--color-surface-container)",
+              borderRadius: "var(--radius-full)",
+            }}
+          >
+            🕔 By Evening
           </span>
-          <span className="flex items-center gap-1 text-xs">
-            🕔 Receive by Evening
-          </span>
-          {r.distance_meters !== undefined && (
-            <span className="flex items-center gap-1 ml-auto text-gray-500">
-              <MapPin size={12} />
-              {(r.distance_meters / 1000).toFixed(1)} km
+          {r.deliveryFee === 0 && (
+            <span
+              className="ml-auto font-semibold"
+              style={{ color: "var(--color-success)" }}
+            >
+              Free
             </span>
           )}
         </div>

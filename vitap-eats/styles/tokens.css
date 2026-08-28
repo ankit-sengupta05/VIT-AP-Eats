@@ -1,85 +1,99 @@
 /* =========================================================
-   VIT-AP Eats — Design Tokens
-   EDITABLE THEME SETTINGS
+   VIT-AP Eats — Design Tokens  v2.0
+   TWO-COLOUR THEME: Cream (#FAECD7) + Burgundy (#4D0805)
+   =========================================================
+   To retheme the ENTIRE app, change only the two lines below:
+   --theme-bg    → the light "canvas" colour
+   --theme-dark  → the dark "brand" colour
    ========================================================= */
 
 :root {
-  /* 🎨 1. PRIMARY BRAND COLOR (Change this to change the whole theme) */
-  --theme-primary: #FF5200;
-  
-  /* 🎨 2. SECONDARY / ACCENT COLOR */
-  --theme-secondary: #006b29;
+  /* ── 🎨 THE TWO BRAND COLOURS ──────────────────────────── */
+  --theme-bg:   #FAECD7;   /* warm cream – backgrounds, surfaces     */
+  --theme-dark: #4D0805;   /* deep burgundy – accents, CTAs, headers  */
 
-  /* --- Derived Brand Tokens --- */
-  --color-primary: var(--theme-primary);
-  --color-primary-dark: color-mix(in srgb, var(--theme-primary) 70%, black);
-  --color-primary-container: color-mix(in srgb, var(--theme-primary) 85%, black);
-  --color-primary-fixed: color-mix(in srgb, var(--theme-primary) 20%, white);
-  --color-on-primary: #ffffff;
-  
-  --color-secondary: #5f5e5e;
-  --color-tertiary: var(--theme-secondary);
-  
-  /* --- Semantic --- */
-  --color-success: #006b29;
-  --color-warning: #C98A1F;
-  --color-danger: #ba1a1a;
-  --color-error: #ba1a1a;
+  /* ── Derived from theme colours ────────────────────────── */
+  --color-primary:           var(--theme-dark);
+  --color-primary-dark:      #330503;   /* burgundy darkened          */
+  --color-primary-container: #7a0c09;   /* medium burgundy            */
+  --color-primary-fixed:     #f5d5c8;   /* very light tint            */
+  --color-on-primary:        #FAECD7;   /* cream text ON dark buttons */
 
-  /* --- Surfaces (Light Mode) --- */
-  --color-bg: #f9f9f9;
-  --color-surface: #f9f9f9;
-  --color-surface-container-lowest: #ffffff;
-  --color-surface-container-low: #f3f3f3;
-  --color-surface-container: #eeeeee;
-  --color-surface-container-high: #e8e8e8;
+  --color-secondary:         #7a5a44;   /* warm mid-brown             */
+  --color-tertiary:          #8b4513;   /* sienna – ratings, stars    */
+  --color-tertiary-container: #f5dbc8;
 
-  /* --- Text (Light Mode) --- */
-  --color-on-surface: #111827; /* Dark gray/black for contrast */
-  --color-on-surface-variant: #4b5563;
-  --color-text-primary: #111827;
-  --color-text-secondary: #4b5563;
+  /* ── Semantic colours (keep readable on cream bg) ───────── */
+  --color-success: #2d6a4f;
+  --color-warning: #b5690a;
+  --color-danger:  #ba1a1a;
+  --color-error:   #ba1a1a;
+  --color-error-container: #ffdad6;
 
-  /* --- Outline --- */
-  --color-outline: #9ca3af;
-  --color-border: #e5e7eb;
+  /* ── Surfaces (all opaque — no transparency) ─────────────
+     Light ladder from darkest cream → pure white-ish        */
+  --color-bg:                        #FAECD7;  /* main app bg              */
+  --color-surface:                   #FDF4E7;  /* cards / panels (layer 1) */
+  --color-surface-container-lowest:  #FFFFFF;  /* modals / elevated cards  */
+  --color-surface-container-low:     #FEF7EC;  /* input bg, subtle areas   */
+  --color-surface-container:         #F5E4C8;  /* chips, dividers          */
+  --color-surface-container-high:    #EDD9B2;  /* stronger dividers        */
+  --color-surface-container-highest: #E5CFA0;  /* active tabs              */
 
-  /* --- Typography --- */
+  /* ── Text ───────────────────────────────────────────────── */
+  --color-on-surface:         #1A0604;  /* near-black for readability */
+  --color-on-surface-variant: #5C3A2A;  /* brown-toned secondary text */
+  --color-text-primary:       #1A0604;
+  --color-text-secondary:     #5C3A2A;
+
+  /* ── Borders / Outlines ─────────────────────────────────── */
+  --color-border:          #E0C9A6;
+  --color-outline:         #C4A882;
+  --color-outline-variant: #D8C0A0;
+
+  /* ── Inverse (for floating elements on dark bg) ─────────── */
+  --color-inverse-surface:    var(--theme-dark);
+  --color-inverse-on-surface: var(--theme-bg);
+
+  /* ── Typography ─────────────────────────────────────────── */
   --font-heading: 'Manrope', system-ui, sans-serif;
-  --font-body: 'Inter', system-ui, sans-serif;
+  --font-body:    'Inter',   system-ui, sans-serif;
 
-  /* --- Spacing --- */
-  --radius-sm: 0.25rem;
-  --radius-md: 0.5rem;
-  --radius-lg: 1rem;
-  --radius-xl: 1.5rem;
+  /* ── Radius — more circular per user request ────────────── */
+  --radius-sm:   0.375rem;   /* 6px  */
+  --radius-md:   0.75rem;    /* 12px */
+  --radius-lg:   1.25rem;    /* 20px */
+  --radius-xl:   1.75rem;    /* 28px */
   --radius-full: 9999px;
 
-  /* --- Elevation shadows --- */
-  --shadow-sm: 0px 1px 2px rgba(0, 0, 0, 0.05);
-  --shadow-md: 0px 4px 20px rgba(0, 0, 0, 0.05);
-  --shadow-lg: 0px 8px 30px rgba(0, 0, 0, 0.08);
-  --shadow-xl: 0px 16px 40px rgba(0, 0, 0, 0.12);
-  --shadow-primary: 0px 4px 12px color-mix(in srgb, var(--theme-primary) 30%, transparent);
+  /* ── Shadows (very soft on cream bg) ───────────────────── */
+  --shadow-sm:      0 1px 3px rgba(77,8,5,0.06);
+  --shadow-md:      0 4px 16px rgba(77,8,5,0.08);
+  --shadow-lg:      0 8px 28px rgba(77,8,5,0.12);
+  --shadow-xl:      0 16px 40px rgba(77,8,5,0.16);
+  --shadow-primary: 0 4px 14px rgba(77,8,5,0.30);
 }
 
-/* --- Dark Mode Auto-Detection --- */
+/* ── Dark mode override (opt-in via OS preference) ──────────
+   Keeps the same hue family but inverts light/dark roles.   */
 @media (prefers-color-scheme: dark) {
   :root {
-    --color-bg: #121212;
-    --color-surface: #1e1e1e;
-    --color-surface-container-lowest: #242424;
-    --color-surface-container-low: #2c2c2c;
-    --color-surface-container: #333333;
-    --color-surface-container-high: #383838;
-    
-    /* Ensure text is white/light-gray in dark mode for contrast */
-    --color-on-surface: #f9fafb;
-    --color-on-surface-variant: #d1d5db;
-    --color-text-primary: #f9fafb;
-    --color-text-secondary: #9ca3af;
-    
-    --color-outline: #52525b;
-    --color-border: #3f3f46;
+    --color-bg:                        #1A0604;
+    --color-surface:                   #240906;
+    --color-surface-container-lowest:  #2E0C08;
+    --color-surface-container-low:     #3A100A;
+    --color-surface-container:         #47130C;
+    --color-surface-container-high:    #55170E;
+
+    --color-on-surface:         #FAECD7;
+    --color-on-surface-variant: #D4B89A;
+    --color-text-primary:       #FAECD7;
+    --color-text-secondary:     #C4A882;
+
+    --color-border:          #5C2018;
+    --color-outline:         #7A2E1F;
+    --color-outline-variant: #4D1810;
+
+    --color-primary-fixed: #3a100a;
   }
 }
