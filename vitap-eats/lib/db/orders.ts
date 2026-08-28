@@ -101,3 +101,18 @@ export async function getUserOrders(userId: string): Promise<Order[]> {
   const snap = await getDocs(q);
   return snap.docs.map((d) => ({ id: d.id, ...d.data() } as Order));
 }
+
+/** Realtime subscription to user's order history */
+export function subscribeToUserOrders(
+  userId: string,
+  callback: (orders: Order[]) => void
+): Unsubscribe {
+  const q = query(
+    collection(db, "orders"),
+    where("userId", "==", userId),
+    orderBy("createdAt", "desc")
+  );
+  return onSnapshot(q, (snap) => {
+    callback(snap.docs.map((d) => ({ id: d.id, ...d.data() } as Order)));
+  });
+}

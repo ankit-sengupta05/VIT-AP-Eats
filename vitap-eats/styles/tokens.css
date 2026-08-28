@@ -47,9 +47,9 @@
   --color-text-secondary:     #5C3A2A;
 
   /* ── Borders / Outlines ─────────────────────────────────── */
-  --color-border:          #E0C9A6;
-  --color-outline:         #C4A882;
-  --color-outline-variant: #D8C0A0;
+    --color-border:          #EDD9B2;
+    --color-outline:         #D8C0A0;
+    --color-outline-variant: #E5CFA0;
 
   /* ── Inverse (for floating elements on dark bg) ─────────── */
   --color-inverse-surface:    var(--theme-dark);

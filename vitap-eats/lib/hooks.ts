@@ -2,7 +2,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useState, useEffect, useRef } from "react";
 import { getRestaurants, getRestaurantBySlug, getMenu } from "@/lib/db/restaurants";
 import { getAllMenuItems, type MenuItem } from "@/lib/db/items";
-import { getUserOrders, updateOrderStatus, type Order } from "@/lib/db/orders";
+import { getUserOrders, subscribeToUserOrders, updateOrderStatus, type Order } from "@/lib/db/orders";
 import { getUserProfile } from "@/lib/db/users";
 import { auth } from "@/lib/firebase";
 import { onAuthStateChanged } from "firebase/auth";
@@ -71,7 +71,6 @@ export function useOrders() {
   const [orders, setOrders] = useState<Order[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [isError, setIsError] = useState<boolean>(false);
-  const fetchedRef = useRef<string | null>(null);
 
   useEffect(() => {
     // Auth session not yet restored — stay in loading state
@@ -86,28 +85,22 @@ export function useOrders() {
       return () => clearTimeout(timer);
     }
 
-    // Already fetched for this uid — skip
-    if (fetchedRef.current === uid) return;
-    fetchedRef.current = uid;
-
     // Logged in — fetch in async callback (not synchronous body)
     let cancelled = false;
     setIsLoading(true);
-    getUserOrders(uid)
-      .then((data) => {
-        if (!cancelled) {
-          setOrders(data);
-          setIsLoading(false);
-        }
-      })
-      .catch(() => {
-        if (!cancelled) {
-          setIsError(true);
-          setIsLoading(false);
-        }
-      });
+    setIsError(false);
 
-    return () => { cancelled = true; };
+    const unsubscribe = subscribeToUserOrders(uid, (data) => {
+      if (!cancelled) {
+        setOrders(data);
+        setIsLoading(false);
+      }
+    });
+
+    return () => {
+      cancelled = true;
+      unsubscribe();
+    };
   }, [uid]);
 
   return { data: orders, isLoading, isError };

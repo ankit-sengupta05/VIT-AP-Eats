@@ -12,6 +12,7 @@ export default function CustomerHeader() {
   const { user, role, signOut, loading } = useSession();
   const { label } = useLocationStore();
   const [isLocationOpen, setIsLocationOpen] = useState(false);
+  const [isProfileOpen, setIsProfileOpen] = useState(false);
 
   return (
     <>
@@ -70,28 +71,35 @@ export default function CustomerHeader() {
             </Link>
 
             {!loading && user ? (
-              <div className="ml-1 relative group">
-                <button className="flex items-center gap-2 pl-2 pr-4 py-1.5 rounded-[--radius-full] border border-[--color-border] hover:bg-[--color-surface-container-low] transition-colors">
-                  <span className="w-6 h-6 rounded-full text-white text-xs font-bold flex items-center justify-center uppercase" style={{ background: "var(--color-tertiary)" }}>
+              <div className="ml-1 relative">
+                <button
+                  onClick={() => setIsProfileOpen(!isProfileOpen)}
+                  className="w-8 h-8 rounded-full flex items-center justify-center border-2 hover:bg-[--color-surface-container-low] transition-colors"
+                  style={{ borderColor: "var(--color-primary)" }}
+                >
+                  <span className="text-xs font-bold uppercase" style={{ color: "var(--color-primary)" }}>
                     {user.displayName?.[0] ?? "U"}
                   </span>
-                  <span className="text-sm font-semibold max-w-[100px] truncate">{user.displayName ?? "User"}</span>
                 </button>
                 
-                {/* Wrap dropdown with padding so hover doesn't break on gap */}
-                <div className="absolute right-0 top-full pt-1.5 w-48 opacity-0 pointer-events-none group-hover:opacity-100 group-hover:pointer-events-auto transition-opacity z-50">
-                  <div className="border border-[--color-border] rounded-[--radius-md] shadow-xl py-1 overflow-hidden" style={{ backgroundColor: "var(--color-surface-container-lowest)" }}>
-                    {role === "admin" && (
-                      <Link href="/admin" className="block px-4 py-2 text-sm font-bold text-[--color-primary] bg-[--color-surface-container-low] hover:bg-[--color-surface-container]">
-                        Admin Dashboard
-                      </Link>
-                    )}
-                    <Link href="/profile" className="block px-4 py-2 text-sm text-[--color-on-surface] hover:bg-[--color-surface-container-low]">My Profile</Link>
-                    <Link href="/orders" className="block px-4 py-2 text-sm text-[--color-on-surface] hover:bg-[--color-surface-container-low]">Orders</Link>
-                    <Link href="/favorites" className="block px-4 py-2 text-sm text-[--color-on-surface] hover:bg-[--color-surface-container-low]">Favorites</Link>
-                    <button onClick={signOut} className="block w-full text-left px-4 py-2 text-sm text-[--color-error] hover:bg-[--color-surface-container-low]">Sign out</button>
-                  </div>
-                </div>
+                {isProfileOpen && (
+                  <>
+                    <div className="fixed inset-0 z-40" onClick={() => setIsProfileOpen(false)} />
+                    <div className="absolute right-0 top-full mt-2 w-48 z-50">
+                      <div className="border border-[--color-border] rounded-[--radius-lg] shadow-[--shadow-lg] py-1 overflow-hidden" style={{ backgroundColor: "var(--color-surface-container-lowest)" }}>
+                        {role === "admin" && (
+                          <Link href="/admin" onClick={() => setIsProfileOpen(false)} className="block px-4 py-2 text-sm font-bold text-[--color-primary] bg-[--color-surface-container-low] hover:bg-[--color-surface-container]">
+                            Admin Dashboard
+                          </Link>
+                        )}
+                        <Link href="/profile" onClick={() => setIsProfileOpen(false)} className="block px-4 py-2 text-sm text-[--color-on-surface] hover:bg-[--color-surface-container-low] transition-colors">My Profile</Link>
+                        <Link href="/orders" onClick={() => setIsProfileOpen(false)} className="block px-4 py-2 text-sm text-[--color-on-surface] hover:bg-[--color-surface-container-low] transition-colors">Orders</Link>
+                        <Link href="/favorites" onClick={() => setIsProfileOpen(false)} className="block px-4 py-2 text-sm text-[--color-on-surface] hover:bg-[--color-surface-container-low] transition-colors">Favorites</Link>
+                        <button onClick={() => { setIsProfileOpen(false); signOut(); }} className="block w-full text-left px-4 py-2 text-sm text-[--color-error] hover:bg-[--color-surface-container-low] transition-colors">Sign out</button>
+                      </div>
+                    </div>
+                  </>
+                )}
               </div>
             ) : !loading && !user ? (
               <Link

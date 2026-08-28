@@ -29,8 +29,9 @@ export default function HomePage() {
   const { data: restaurants, isLoading: isResLoading, isError: isResError } = useRestaurants(
     activeCuisine === "all" ? undefined : activeCuisine
   );
+  const activeCategoryLabel = CUISINES.find(c => c.id === activeCuisine)?.label;
   const { data: menuItems, isLoading: isMenuLoading } = useMenuItems(
-    activeCuisine === "all" ? undefined : activeCuisine
+    activeCuisine === "all" ? undefined : activeCategoryLabel
   );
 
   return (

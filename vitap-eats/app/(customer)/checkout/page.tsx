@@ -119,33 +119,7 @@ function CheckoutContent() {
           </div>
         </section>
 
-        {/* Payment Method */}
-        <section className="bg-[--color-surface-container-lowest] rounded-[--radius-lg] shadow-[--shadow-sm] border border-[--color-border] p-5">
-          <h2 className="font-bold text-lg text-[--color-on-surface] mb-4" style={{ fontFamily: "var(--font-heading)" }}>Payment Method</h2>
-          <div className="space-y-3">
-            {[
-              { id: "upi",  label: "UPI / Google Pay",    icon: Wallet     },
-              { id: "card", label: "Credit / Debit Card", icon: CreditCard },
-              { id: "cod",  label: "Cash on Delivery",    icon: Banknote   },
-            ].map(({ id, label, icon: Icon }) => (
-              <label key={id}
-                className={cn("flex items-center justify-between p-4 rounded-[--radius-md] border-2 cursor-pointer transition-colors",
-                  paymentMethod === id ? "border-[--color-primary] bg-[--color-primary-fixed]" : "border-[--color-border] hover:bg-[--color-surface-container-low]"
-                )}>
-                <div className="flex items-center gap-3">
-                  <Icon size={20} className={paymentMethod === id ? "text-[--color-primary]" : "text-[--color-on-surface-variant]"} />
-                  <span className="font-semibold text-[--color-on-surface]">{label}</span>
-                </div>
-                <div className={cn("w-5 h-5 rounded-full border-2 flex items-center justify-center transition-colors",
-                  paymentMethod === id ? "border-[--color-primary]" : "border-[--color-border]")}>
-                  {paymentMethod === id && <div className="w-2.5 h-2.5 rounded-full" style={{ background: "var(--color-primary)" }} />}
-                </div>
-                <input type="radio" name="payment" value={id} className="sr-only"
-                  checked={paymentMethod === id} onChange={() => setPaymentMethod(id as any)} />
-              </label>
-            ))}
-          </div>
-        </section>
+
 
         {/* Bill Summary */}
         <section className="bg-[--color-surface-container-lowest] rounded-[--radius-lg] shadow-[--shadow-sm] border border-[--color-border] p-5">
@@ -183,7 +157,7 @@ function CheckoutContent() {
             {isPaying ? (
               <><Loader2 size={20} className="animate-spin" />Processing...</>
             ) : (
-              <>Pay {rupees(displayBill.total)} + GST <ArrowRight size={20} /></>
+              <>Confirm Order ({rupees(displayBill.total)} + GST) <ArrowRight size={20} /></>
             )}
           </button>
           <p className="text-xs text-[--color-on-surface-variant] text-center mt-3">
