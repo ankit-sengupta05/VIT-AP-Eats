@@ -37,11 +37,11 @@ function ItemModal({
 }) {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-      <div className="bg-white dark:bg-zinc-900 rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden">
+      <div className="bg-[--color-surface-container-lowest] rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden">
         {/* Header */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200 dark:border-zinc-700">
-          <h3 className="font-bold text-lg text-gray-900 dark:text-white">{title}</h3>
-          <button onClick={onClose} className="p-1 rounded-md hover:bg-gray-100 dark:hover:bg-zinc-800">
+        <div className="flex items-center justify-between px-6 py-4 border-b border-[--color-border]">
+          <h3 className="font-bold text-lg text-[--color-on-surface]">{title}</h3>
+          <button onClick={onClose} className="p-1 rounded-md hover:bg-[--color-surface-container-low]">
             <X size={20} />
           </button>
         </div>
@@ -50,35 +50,35 @@ function ItemModal({
         <div className="px-6 py-4 space-y-4 max-h-[70vh] overflow-y-auto">
           <div className="grid grid-cols-2 gap-4">
             <div className="col-span-2">
-              <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1">Item Name *</label>
+              <label className="block text-sm font-semibold text-[--color-on-surface] mb-1">Item Name *</label>
               <input value={form.name} onChange={e => onChange("name", e.target.value)}
                 placeholder="e.g. Chicken Biryani"
-                className="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-zinc-600 bg-white dark:bg-zinc-800 text-sm focus:outline-none focus:ring-2 focus:ring-orange-400" />
+                className="w-full px-3 py-2 rounded-lg border border-[--color-border] bg-[--color-surface-container-lowest] text-[--color-on-surface] text-sm focus:outline-none focus:ring-2 focus:ring-[--color-primary]" />
             </div>
             <div className="col-span-2">
-              <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1">Description</label>
+              <label className="block text-sm font-semibold text-[--color-on-surface] mb-1">Description</label>
               <textarea value={form.description} onChange={e => onChange("description", e.target.value)}
                 placeholder="Short description of the item"
                 rows={2}
-                className="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-zinc-600 bg-white dark:bg-zinc-800 text-sm focus:outline-none focus:ring-2 focus:ring-orange-400 resize-none" />
+                className="w-full px-3 py-2 rounded-lg border border-[--color-border] bg-[--color-surface-container-lowest] text-[--color-on-surface] text-sm focus:outline-none focus:ring-2 focus:ring-[--color-primary] resize-none" />
             </div>
             <div>
-              <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1">Price (₹) *</label>
+              <label className="block text-sm font-semibold text-[--color-on-surface] mb-1">Price (₹) *</label>
               <input type="number" min="0" value={form.price} onChange={e => onChange("price", e.target.value)}
                 placeholder="e.g. 120"
-                className="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-zinc-600 bg-white dark:bg-zinc-800 text-sm focus:outline-none focus:ring-2 focus:ring-orange-400" />
+                className="w-full px-3 py-2 rounded-lg border border-[--color-border] bg-[--color-surface-container-lowest] text-[--color-on-surface] text-sm focus:outline-none focus:ring-2 focus:ring-[--color-primary]" />
             </div>
             <div>
-              <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1">Category *</label>
+              <label className="block text-sm font-semibold text-[--color-on-surface] mb-1">Category *</label>
               <input value={form.category} onChange={e => onChange("category", e.target.value)}
                 placeholder="e.g. Biryani"
-                className="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-zinc-600 bg-white dark:bg-zinc-800 text-sm focus:outline-none focus:ring-2 focus:ring-orange-400" />
+                className="w-full px-3 py-2 rounded-lg border border-[--color-border] bg-[--color-surface-container-lowest] text-[--color-on-surface] text-sm focus:outline-none focus:ring-2 focus:ring-[--color-primary]" />
             </div>
             <div className="col-span-2">
-              <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1">Image URL (optional)</label>
+              <label className="block text-sm font-semibold text-[--color-on-surface] mb-1">Image URL (optional)</label>
               <input value={form.imageUrl} onChange={e => onChange("imageUrl", e.target.value)}
                 placeholder="https://images.unsplash.com/..."
-                className="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-zinc-600 bg-white dark:bg-zinc-800 text-sm focus:outline-none focus:ring-2 focus:ring-orange-400" />
+                className="w-full px-3 py-2 rounded-lg border border-[--color-border] bg-[--color-surface-container-lowest] text-[--color-on-surface] text-sm focus:outline-none focus:ring-2 focus:ring-[--color-primary]" />
             </div>
             <div className="flex items-center gap-3">
               <button
@@ -103,8 +103,8 @@ function ItemModal({
         </div>
 
         {/* Footer */}
-        <div className="flex justify-end gap-3 px-6 py-4 border-t border-gray-200 dark:border-zinc-700 bg-gray-50 dark:bg-zinc-800/50">
-          <button onClick={onClose} className="px-4 py-2 text-sm rounded-lg border border-gray-300 hover:bg-gray-100 transition-colors">Cancel</button>
+        <div className="flex justify-end gap-3 px-6 py-4 border-t border-[--color-border] bg-[--color-surface-container]">
+          <button onClick={onClose} className="px-4 py-2 text-sm rounded-lg border border-[--color-border] text-[--color-on-surface] hover:bg-[--color-surface-container-high] transition-colors">Cancel</button>
           <button
             onClick={onSave}
             disabled={saving || !form.name || !form.price || !form.category}
@@ -274,7 +274,7 @@ export function MenuTab() {
           <select
             value={selectedRestId}
             onChange={(e) => setSelectedRestId(e.target.value)}
-            className="px-3 py-2 rounded-md border border-gray-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-sm font-medium focus:ring-2 focus:ring-[--color-primary] outline-none"
+            className="px-3 py-2 rounded-md border border-[--color-border] bg-[--color-surface-container-lowest] text-[--color-on-surface] text-sm font-medium focus:ring-2 focus:ring-[--color-primary] outline-none"
           >
             {restaurants.map(r => <option key={r.id} value={r.id}>{r.name}</option>)}
           </select>
@@ -310,30 +310,30 @@ export function MenuTab() {
         <div className="space-y-8">
           {Object.entries(grouped).map(([category, items]) => (
             <div key={category}>
-              <h3 className="font-bold text-lg text-gray-800 dark:text-white mb-3 border-b border-gray-200 dark:border-zinc-700 pb-2">{category}</h3>
+              <h3 className="font-bold text-lg text-[--color-on-surface] mb-3 border-b border-[--color-border] pb-2">{category}</h3>
               <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
                 {(items as MenuItem[]).map((item) => (
                   <div
                     key={item.id}
                     className={cn(
-                      "bg-white dark:bg-zinc-900 rounded-[--radius-lg] border p-4 flex gap-4 transition-all",
+                      "bg-[--color-surface-container-lowest] rounded-[--radius-lg] border p-4 flex gap-4 transition-all",
                       deletingId === item.id && "opacity-40",
-                      !item.isAvailable ? "border-gray-200 dark:border-zinc-700 opacity-60" : "border-gray-200 dark:border-zinc-700 shadow-sm hover:border-[--color-primary]"
+                      !item.isAvailable ? "border-[--color-border] opacity-60" : "border-[--color-border] shadow-[--shadow-sm] hover:border-[--color-primary]"
                     )}
                   >
-                    <div className="w-16 h-16 rounded-md flex items-center justify-center text-xs font-bold shrink-0 overflow-hidden bg-gray-100 dark:bg-zinc-800 text-gray-400">
+                    <div className="w-16 h-16 rounded-md flex items-center justify-center text-xs font-bold shrink-0 overflow-hidden bg-[--color-surface-container-low] text-[--color-on-surface-variant]">
                       {item.imageUrl ? <img src={item.imageUrl} alt={item.name} className="w-full h-full object-cover rounded-md" /> : "No Img"}
                     </div>
                     <div className="flex-1 min-w-0 flex flex-col justify-between">
                       <div>
                         <div className="flex items-start justify-between gap-2">
-                          <p className="font-bold text-sm text-gray-900 dark:text-white truncate flex items-center gap-1.5">
-                            <span className={cn("w-2 h-2 rounded-full shrink-0", item.isVeg ? "bg-green-500" : "bg-red-500")} />
+                          <p className="font-bold text-sm text-[--color-on-surface] truncate flex items-center gap-1.5">
+                            <span className={cn("w-2 h-2 rounded-full shrink-0", item.isVeg ? "bg-[--color-success]" : "bg-[--color-error]")} />
                             {item.name}
                           </p>
-                          <span className="font-extrabold text-sm text-gray-900 dark:text-white tabular-nums shrink-0">{rupees(item.price)}</span>
+                          <span className="font-extrabold text-sm text-[--color-on-surface] tabular-nums shrink-0">{rupees(item.price)}</span>
                         </div>
-                        <p className="text-xs text-gray-500 line-clamp-1 mt-0.5">{item.description || "No description"}</p>
+                        <p className="text-xs text-[--color-on-surface-variant] line-clamp-1 mt-0.5">{item.description || "No description"}</p>
                       </div>
 
                       <div className="flex items-center justify-between mt-3">

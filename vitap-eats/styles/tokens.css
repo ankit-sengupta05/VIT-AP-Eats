@@ -1,122 +1,85 @@
 /* =========================================================
-   VIT-AP Eats — Design Tokens (Single Source of Truth)
-   Stitch project: 13743577752831287259 "Vibrant Culinary Hub"
+   VIT-AP Eats — Design Tokens
+   EDITABLE THEME SETTINGS
    ========================================================= */
 
-
 :root {
-  /* --- Brand --- */
-  --color-primary: #FF5200;
-  --color-primary-dark: #a83300;
-  --color-primary-container: #d24200;
-  --color-primary-fixed: #ffdbd0;
-  --color-primary-fixed-dim: #ffb59d;
+  /* 🎨 1. PRIMARY BRAND COLOR (Change this to change the whole theme) */
+  --theme-primary: #FF5200;
+  
+  /* 🎨 2. SECONDARY / ACCENT COLOR */
+  --theme-secondary: #006b29;
+
+  /* --- Derived Brand Tokens --- */
+  --color-primary: var(--theme-primary);
+  --color-primary-dark: color-mix(in srgb, var(--theme-primary) 70%, black);
+  --color-primary-container: color-mix(in srgb, var(--theme-primary) 85%, black);
+  --color-primary-fixed: color-mix(in srgb, var(--theme-primary) 20%, white);
   --color-on-primary: #ffffff;
-  --color-on-primary-container: #fffbff;
-  --color-inverse-primary: #ffb59d;
-
-  /* --- Secondary --- */
+  
   --color-secondary: #5f5e5e;
-  --color-secondary-container: #e2dfde;
-  --color-on-secondary: #ffffff;
-  --color-on-secondary-container: #636262;
-
-  /* --- Tertiary (Success/Fresh) --- */
-  --color-tertiary: #006b29;
-  --color-tertiary-container: #008735;
-  --color-on-tertiary: #ffffff;
-  --color-on-tertiary-container: #f7fff2;
-
+  --color-tertiary: var(--theme-secondary);
+  
   /* --- Semantic --- */
   --color-success: #006b29;
   --color-warning: #C98A1F;
   --color-danger: #ba1a1a;
   --color-error: #ba1a1a;
-  --color-error-container: #ffdad6;
-  --color-on-error: #ffffff;
-  --color-info: #3A6EA5;
 
-  /* --- Surfaces --- */
+  /* --- Surfaces (Light Mode) --- */
   --color-bg: #f9f9f9;
   --color-surface: #f9f9f9;
-  --color-surface-dim: #dadada;
-  --color-surface-bright: #f9f9f9;
   --color-surface-container-lowest: #ffffff;
   --color-surface-container-low: #f3f3f3;
   --color-surface-container: #eeeeee;
   --color-surface-container-high: #e8e8e8;
-  --color-surface-container-highest: #e2e2e2;
 
-  /* --- Text --- */
-  --color-on-surface: #1a1c1c;
-  --color-on-surface-variant: #5c4037;
-  --color-on-background: #1a1c1c;
-  --color-text-primary: #1a1c1c;
-  --color-text-secondary: #5c4037;
-  --color-text-disabled: #A79E92;
+  /* --- Text (Light Mode) --- */
+  --color-on-surface: #111827; /* Dark gray/black for contrast */
+  --color-on-surface-variant: #4b5563;
+  --color-text-primary: #111827;
+  --color-text-secondary: #4b5563;
 
   /* --- Outline --- */
-  --color-outline: #907065;
-  --color-outline-variant: #e5beb2;
-  --color-border: #e5beb2;
-
-  /* --- Inverse --- */
-  --color-inverse-surface: #2f3131;
-  --color-inverse-on-surface: #f1f1f1;
-
-  /* --- Dark mode overrides (scoped to .dark class) --- */
+  --color-outline: #9ca3af;
+  --color-border: #e5e7eb;
 
   /* --- Typography --- */
   --font-heading: 'Manrope', system-ui, sans-serif;
   --font-body: 'Inter', system-ui, sans-serif;
 
-  --text-xs: 0.75rem;     /* 12px */
-  --text-sm: 0.875rem;    /* 14px */
-  --text-base: 1rem;      /* 16px */
-  --text-lg: 1.125rem;    /* 18px */
-  --text-xl: 1.25rem;     /* 20px */
-  --text-2xl: 1.5rem;     /* 24px */
-  --text-3xl: 2rem;       /* 32px */
-  --text-4xl: 2.5rem;     /* 40px */
-  --text-5xl: 3rem;       /* 48px */
+  /* --- Spacing --- */
+  --radius-sm: 0.25rem;
+  --radius-md: 0.5rem;
+  --radius-lg: 1rem;
+  --radius-xl: 1.5rem;
+  --radius-full: 9999px;
 
-  /* --- Spacing (8px scale) --- */
-  --space-1: 4px;
-  --space-2: 8px;
-  --space-3: 12px;
-  --space-4: 16px;
-  --space-6: 24px;
-  --space-8: 32px;
-  --space-10: 40px;
-  --space-12: 48px;
-  --space-16: 64px;
-
-  /* --- Radius --- */
-  --radius-sm: 0.25rem;   /* 4px  */
-  --radius-md: 0.5rem;    /* 8px — buttons, inputs */
-  --radius-lg: 1rem;      /* 16px — cards, modals */
-  --radius-xl: 1.5rem;    /* 24px */
-  --radius-full: 9999px;  /* pills, badges */
-
-  /* --- Elevation shadows (warm-tinted, not cold black) --- */
-  --shadow-sm: 0px 1px 2px rgba(26, 12, 0, 0.06);
+  /* --- Elevation shadows --- */
+  --shadow-sm: 0px 1px 2px rgba(0, 0, 0, 0.05);
   --shadow-md: 0px 4px 20px rgba(0, 0, 0, 0.05);
   --shadow-lg: 0px 8px 30px rgba(0, 0, 0, 0.08);
   --shadow-xl: 0px 16px 40px rgba(0, 0, 0, 0.12);
-  --shadow-primary: 0px 4px 12px rgba(255, 82, 0, 0.30);
+  --shadow-primary: 0px 4px 12px color-mix(in srgb, var(--theme-primary) 30%, transparent);
 }
 
-.dark {
-  --color-bg: #1a1c1c;
-  --color-surface: #2f3131;
-  --color-surface-container-lowest: #141616;
-  --color-surface-container-low: #1a1c1c;
-  --color-surface-container: #242626;
-  --color-surface-container-high: #2f3131;
-  --color-on-surface: #e2e2e2;
-  --color-on-surface-variant: #e5beb2;
-  --color-text-primary: #e2e2e2;
-  --color-text-secondary: #c8c6c5;
-  --color-outline: #907065;
-  --color-border: #5c4037;
+/* --- Dark Mode Auto-Detection --- */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --color-bg: #09090b;
+    --color-surface: #18181b;
+    --color-surface-container-lowest: #000000;
+    --color-surface-container-low: #18181b;
+    --color-surface-container: #27272a;
+    --color-surface-container-high: #3f3f46;
+    
+    /* Ensure text is white/light-gray in dark mode for contrast */
+    --color-on-surface: #f9fafb;
+    --color-on-surface-variant: #d1d5db;
+    --color-text-primary: #f9fafb;
+    --color-text-secondary: #9ca3af;
+    
+    --color-outline: #52525b;
+    --color-border: #3f3f46;
+  }
 }
