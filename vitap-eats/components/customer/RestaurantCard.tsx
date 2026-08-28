@@ -1,6 +1,6 @@
 import Link from "next/link";
 import Image from "next/image";
-import { Star, Clock, Bike, Heart, MapPin } from "lucide-react";
+import { Star, Bike, Heart, MapPin } from "lucide-react";
 import { Badge } from "@/components/ui/Badge";
 import { rupees, cn } from "@/lib/utils";
 import { useFavorites, useAddFavorite, useRemoveFavorite } from "@/lib/hooks";
@@ -102,12 +102,11 @@ export default function RestaurantCard({ r }: { r: Restaurant }) {
             {r.rating.toFixed(1)}
           </span>
           <span className="flex items-center gap-1">
-            <Clock size={12} />
-            {r.deliveryTime} min
-          </span>
-          <span className="flex items-center gap-1">
             <Bike size={12} />
             {r.deliveryFee === 0 ? "Free delivery" : rupees(r.deliveryFee)}
+          </span>
+          <span className="flex items-center gap-1 text-xs">
+            🕔 Receive by Evening
           </span>
           {r.distance_meters !== undefined && (
             <span className="flex items-center gap-1 ml-auto text-gray-500">

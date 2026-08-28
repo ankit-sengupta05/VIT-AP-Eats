@@ -5,7 +5,7 @@ import toast from "react-hot-toast";
 import { rupees, cn } from "@/lib/utils";
 import { getRestaurants, getAllRestaurants, type Restaurant } from "@/lib/db/restaurants";
 import {
-  getMenuByRestaurant, addMenuItem, updateMenuItem, deleteMenuItem, type MenuItem,
+  getMenuByRestaurant, addMenuItem, updateMenuItem, deleteMenuItem, type MenuItem, type MenuItemVariant,
 } from "@/lib/db/items";
 
 // ── Form defaults ──────────────────────────────────────────────────────────
@@ -17,6 +17,7 @@ const EMPTY_FORM = {
   imageUrl: "",
   isVeg: false,
   isAvailable: true,
+  variants: [] as MenuItemVariant[],
 };
 
 // ── Small modal component ──────────────────────────────────────────────────
@@ -25,6 +26,9 @@ function ItemModal({
   form,
   categories,
   onChange,
+  onVariantChange,
+  onAddVariant,
+  onRemoveVariant,
   onSave,
   onClose,
   saving,
@@ -32,7 +36,10 @@ function ItemModal({
   title: string;
   form: typeof EMPTY_FORM;
   categories: string[];
-  onChange: (k: keyof typeof EMPTY_FORM, v: string | boolean) => void;
+  onChange: (k: keyof Omit<typeof EMPTY_FORM, "variants">, v: string | boolean) => void;
+  onVariantChange: (idx: number, field: keyof MenuItemVariant, value: string | number) => void;
+  onAddVariant: () => void;
+  onRemoveVariant: (idx: number) => void;
   onSave: () => void;
   onClose: () => void;
   saving: boolean;
@@ -53,7 +60,7 @@ function ItemModal({
         </div>
 
         {/* Body */}
-        <div className="px-6 py-4 space-y-4 max-h-[70vh] overflow-y-auto">
+        <div className="px-6 py-4 space-y-4 max-h-[75vh] overflow-y-auto">
           <div className="grid grid-cols-2 gap-4">
             <div className="col-span-2">
               <label className="block text-sm font-semibold text-[--color-on-surface] mb-1">Item Name *</label>
@@ -69,10 +76,11 @@ function ItemModal({
                 className="w-full px-3 py-2 rounded-lg border border-[--color-border] bg-[--color-surface-container-lowest] text-[--color-on-surface] text-sm focus:outline-none focus:ring-2 focus:ring-[--color-primary] resize-none" />
             </div>
             <div>
-              <label className="block text-sm font-semibold text-[--color-on-surface] mb-1">Price (₹) *</label>
+              <label className="block text-sm font-semibold text-[--color-on-surface] mb-1">Base Price (₹) *</label>
               <input type="number" min="0" value={form.price} onChange={e => onChange("price", e.target.value)}
-                placeholder="e.g. 120"
+                placeholder="e.g. 130"
                 className="w-full px-3 py-2 rounded-lg border border-[--color-border] bg-[--color-surface-container-lowest] text-[--color-on-surface] text-sm focus:outline-none focus:ring-2 focus:ring-[--color-primary]" />
+              <p className="text-xs text-[--color-on-surface-variant] mt-1">Used when no variants are set.</p>
             </div>
             <div>
               <label className="block text-sm font-semibold text-[--color-on-surface] mb-1">Category *</label>
@@ -106,10 +114,7 @@ function ItemModal({
                   />
                   <button
                     type="button"
-                    onClick={() => {
-                      setIsCustomCategory(false);
-                      onChange("category", "");
-                    }}
+                    onClick={() => { setIsCustomCategory(false); onChange("category", ""); }}
                     className="px-3 py-2 rounded-lg border border-[--color-border] text-[--color-on-surface-variant] hover:bg-[--color-surface-container-low]"
                   >
                     Cancel
@@ -143,6 +148,55 @@ function ItemModal({
               </button>
             </div>
           </div>
+
+          {/* ── Variants Section ── */}
+          <div className="border border-[--color-border] rounded-lg p-4 space-y-3">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="font-semibold text-sm text-[--color-on-surface]">Variants (Optional)</p>
+                <p className="text-xs text-[--color-on-surface-variant]">Add sizes like Regular/Medium or Half/Full with separate prices.</p>
+              </div>
+              <button
+                type="button"
+                onClick={onAddVariant}
+                className="flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-bold text-white hover:opacity-90"
+                style={{ background: "var(--color-primary)" }}
+              >
+                <Plus size={12} /> Add Variant
+              </button>
+            </div>
+
+            {form.variants.length === 0 && (
+              <p className="text-xs text-[--color-on-surface-variant] italic">No variants — item uses the base price above.</p>
+            )}
+
+            {form.variants.map((v, idx) => (
+              <div key={idx} className="flex gap-2 items-center">
+                <input
+                  value={v.label}
+                  onChange={e => onVariantChange(idx, "label", e.target.value)}
+                  placeholder="Label (e.g. Regular)"
+                  className="flex-1 px-2 py-1.5 rounded-md border border-[--color-border] bg-[--color-surface-container-lowest] text-[--color-on-surface] text-sm focus:outline-none focus:ring-1 focus:ring-[--color-primary]"
+                />
+                <span className="text-[--color-on-surface-variant] shrink-0">₹</span>
+                <input
+                  type="number"
+                  min="0"
+                  value={v.price || ""}
+                  onChange={e => onVariantChange(idx, "price", Number(e.target.value))}
+                  placeholder="Price"
+                  className="w-24 px-2 py-1.5 rounded-md border border-[--color-border] bg-[--color-surface-container-lowest] text-[--color-on-surface] text-sm focus:outline-none focus:ring-1 focus:ring-[--color-primary]"
+                />
+                <button
+                  type="button"
+                  onClick={() => onRemoveVariant(idx)}
+                  className="p-1 text-red-400 hover:text-red-600 hover:bg-red-50 rounded transition-colors"
+                >
+                  <X size={14} />
+                </button>
+              </div>
+            ))}
+          </div>
         </div>
 
         {/* Footer */}
@@ -171,7 +225,6 @@ export function MenuTab() {
   const [isLoading, setIsLoading]       = useState(true);
   const [search, setSearch]             = useState("");
 
-  // Modal state
   const [showModal, setShowModal]       = useState(false);
   const [editTarget, setEditTarget]     = useState<MenuItem | null>(null);
   const [form, setForm]                 = useState<typeof EMPTY_FORM>(EMPTY_FORM);
@@ -205,7 +258,6 @@ export function MenuTab() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => { if (selectedRestId) fetchMenu(selectedRestId); }, [selectedRestId]);
 
-  // ── Form helpers ──────────────────────────────────────────────────────
   const openAdd = () => {
     setEditTarget(null);
     setForm(EMPTY_FORM);
@@ -222,18 +274,33 @@ export function MenuTab() {
       imageUrl:    item.imageUrl ?? "",
       isVeg:       item.isVeg,
       isAvailable: item.isAvailable,
+      variants:    item.variants ?? [],
     });
     setShowModal(true);
   };
 
-  const handleChange = (k: keyof typeof EMPTY_FORM, v: string | boolean) =>
+  const handleChange = (k: keyof Omit<typeof EMPTY_FORM, "variants">, v: string | boolean) =>
     setForm(f => ({ ...f, [k]: v }));
+
+  const handleVariantChange = (idx: number, field: keyof MenuItemVariant, value: string | number) =>
+    setForm(f => {
+      const variants = [...f.variants];
+      variants[idx] = { ...variants[idx], [field]: value };
+      return { ...f, variants };
+    });
+
+  const handleAddVariant = () =>
+    setForm(f => ({ ...f, variants: [...f.variants, { label: "", price: 0 }] }));
+
+  const handleRemoveVariant = (idx: number) =>
+    setForm(f => ({ ...f, variants: f.variants.filter((_, i) => i !== idx) }));
 
   const handleSave = async () => {
     if (!form.name || !form.price || !form.category || !selectedRestId) return;
     setSaving(true);
     try {
-      const payload = {
+      const validVariants = form.variants.filter(v => v.label && v.price > 0);
+      const payload: Omit<MenuItem, "id"> = {
         name:         form.name.trim(),
         description:  form.description.trim(),
         price:        Number(form.price),
@@ -242,6 +309,7 @@ export function MenuTab() {
         isVeg:        form.isVeg,
         isAvailable:  form.isAvailable,
         restaurantId: selectedRestId,
+        variants:     validVariants.length > 0 ? validVariants : undefined,
       };
 
       if (editTarget) {
@@ -313,6 +381,9 @@ export function MenuTab() {
           form={form}
           categories={categories}
           onChange={handleChange}
+          onVariantChange={handleVariantChange}
+          onAddVariant={handleAddVariant}
+          onRemoveVariant={handleRemoveVariant}
           onSave={handleSave}
           onClose={() => setShowModal(false)}
           saving={saving}
@@ -386,6 +457,16 @@ export function MenuTab() {
                           <span className="font-extrabold text-sm text-[--color-on-surface] tabular-nums shrink-0">{rupees(item.price)}</span>
                         </div>
                         <p className="text-xs text-[--color-on-surface-variant] line-clamp-1 mt-0.5">{item.description || "No description"}</p>
+                        {/* Variant badges */}
+                        {item.variants && item.variants.length > 0 && (
+                          <div className="flex flex-wrap gap-1 mt-1.5">
+                            {item.variants.map((v, i) => (
+                              <span key={i} className="text-[10px] font-semibold px-1.5 py-0.5 rounded border bg-[--color-surface-container] text-[--color-on-surface-variant]">
+                                {v.label} ₹{v.price}
+                              </span>
+                            ))}
+                          </div>
+                        )}
                       </div>
 
                       <div className="flex items-center justify-between mt-3">
@@ -397,21 +478,11 @@ export function MenuTab() {
                           {item.isAvailable ? <ToggleRight size={16} /> : <ToggleLeft size={16} />}
                           {item.isAvailable ? "Available" : "Hidden"}
                         </button>
-
                         <div className="flex items-center gap-1">
-                          <button
-                            onClick={() => openEdit(item)}
-                            className="p-1.5 text-gray-400 hover:text-[--color-primary] hover:bg-orange-50 rounded transition-colors"
-                            title="Edit item"
-                          >
+                          <button onClick={() => openEdit(item)} className="p-1.5 text-gray-400 hover:text-[--color-primary] hover:bg-orange-50 rounded transition-colors" title="Edit item">
                             <Edit2 size={14} />
                           </button>
-                          <button
-                            onClick={() => handleDelete(item)}
-                            disabled={deletingId === item.id}
-                            className="p-1.5 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded transition-colors disabled:opacity-40"
-                            title="Delete item"
-                          >
+                          <button onClick={() => handleDelete(item)} disabled={deletingId === item.id} className="p-1.5 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded transition-colors disabled:opacity-40" title="Delete item">
                             {deletingId === item.id ? <Loader2 size={14} className="animate-spin" /> : <Trash2 size={14} />}
                           </button>
                         </div>

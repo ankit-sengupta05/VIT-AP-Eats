@@ -14,11 +14,11 @@ import { useRouter } from "next/navigation";
 import toast, { Toaster } from "react-hot-toast";
 
 const STEPS = [
-  { key: "pending",          label: "Order Placed",    detail: "We've received your order",       emoji: "🛒" },
-  { key: "confirmed",        label: "Order Confirmed", detail: "Restaurant confirmed your order", emoji: "✅" },
-  { key: "preparing",        label: "Preparing",       detail: "Chef is cooking your food",       emoji: "👨‍🍳" },
-  { key: "out_for_delivery", label: "On the Way",      detail: "Your order is nearby!",           emoji: "🔜" },
-  { key: "delivered",        label: "Delivered",       detail: "Enjoy your meal! 🎉",             emoji: "🎉" },
+  { key: "pending",          label: "Order Placed",    detail: "We've received your order",                       emoji: "🛒" },
+  { key: "confirmed",        label: "Order Confirmed", detail: "Restaurant confirmed your order",                 emoji: "✅" },
+  { key: "preparing",        label: "Preparing",       detail: "Chef is cooking your food",                       emoji: "👨‍🍳" },
+  { key: "out_for_delivery", label: "Ready for Pickup", detail: "Head to Main Gate — your order is ready! 🏃",    emoji: "🔜" },
+  { key: "delivered",        label: "Collected",       detail: "Enjoy your meal! 🎉",                             emoji: "🎉" },
 ] as const;
 
 const STATUS_ORDER = STEPS.map((s) => s.key);
@@ -213,11 +213,11 @@ export default function OrderTrackingPage({ params }: { params: Promise<{ id: st
         {/* Status Banner */}
         {!isTerminal && (
           <div className="mt-4 flex items-center gap-3 rounded-[--radius-lg] px-4 py-3" style={{ background: "var(--color-primary-fixed)" }}>
-            <Clock size={20} style={{ color: "var(--color-primary)" }} />
+            <Package size={20} style={{ color: "var(--color-primary)" }} />
             <div>
               <p className="font-bold text-[--color-on-surface]">{STEPS[currentIdx]?.detail ?? "Tracking your order..."}</p>
               <p className="text-xs text-[--color-on-surface-variant]">
-                {realtimeConnected ? "Live updates enabled" : "Refreshes every 15 seconds"}
+                🕔 Receive by Evening · Collect at Main Gate
               </p>
             </div>
           </div>
@@ -301,7 +301,10 @@ export default function OrderTrackingPage({ params }: { params: Promise<{ id: st
               ) : null}
               <div className="flex justify-between font-bold text-base text-[--color-on-surface] pt-2 border-t border-[--color-border]">
                 <span>Total</span>
-                <span>{rupees(order.total)}</span>
+                <div className="text-right">
+                  <span>{rupees(order.total)}</span>
+                  <span className="ml-1 text-xs font-normal text-[--color-on-surface-variant]">+ GST</span>
+                </div>
               </div>
             </div>
           </div>

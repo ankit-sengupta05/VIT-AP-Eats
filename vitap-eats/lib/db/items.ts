@@ -4,16 +4,22 @@ import {
 } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 
+export interface MenuItemVariant {
+  label: string; // e.g. "Regular", "Medium", "Half Plate", "Full Plate"
+  price: number;
+}
+
 export interface MenuItem {
   id: string;
   restaurantId: string;
   name: string;
   description: string;
-  price: number;
+  price: number; // base/default price (used when no variants)
   category: string;
   imageUrl: string;
   isAvailable: boolean;
   isVeg: boolean;
+  variants?: MenuItemVariant[]; // optional size/portion variants
 }
 
 export async function addMenuItem(
@@ -39,6 +45,15 @@ export async function deleteMenuItem(id: string): Promise<void> {
 
 export async function getMenuByRestaurant(restaurantId: string): Promise<MenuItem[]> {
   const q = query(collection(db, "menu_items"), where("restaurantId", "==", restaurantId));
+  const snap = await getDocs(q);
+  return snap.docs.map((d) => ({ id: d.id, ...d.data() } as MenuItem));
+}
+
+export async function getAllMenuItems(category?: string): Promise<MenuItem[]> {
+  let q = query(collection(db, "menu_items"));
+  if (category && category !== "all") {
+    q = query(collection(db, "menu_items"), where("category", "==", category));
+  }
   const snap = await getDocs(q);
   return snap.docs.map((d) => ({ id: d.id, ...d.data() } as MenuItem));
 }

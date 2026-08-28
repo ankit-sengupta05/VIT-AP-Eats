@@ -1,19 +1,21 @@
 "use client";
 import { useState, useEffect, Suspense } from "react";
 import { useCartStore } from "@/lib/store/cart";
-import { useAddresses, useProfile } from "@/lib/hooks";
+import { useProfile } from "@/lib/hooks";
 import { rupees, cn } from "@/lib/utils";
 import { MapPin, CreditCard, Wallet, ChevronLeft, ArrowRight, ShieldCheck, Loader2, Banknote, CheckCircle2 } from "lucide-react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Skeleton } from "@/components/ui/Skeleton";
 import { createOrder } from "@/lib/db/orders";
 import toast from "react-hot-toast";
 
-function BillRow({ label, value, highlight, bold }: { label: string; value: string; highlight?: boolean; bold?: boolean }) {
+function BillRow({ label, value, highlight, bold, subtext }: { label: string; value: string; highlight?: boolean; bold?: boolean; subtext?: string }) {
   return (
     <div className={cn("flex justify-between items-center", bold && "font-bold text-base")}>
-      <span className={highlight ? "text-green-600" : "text-[--color-on-surface-variant]"}>{label}</span>
+      <div>
+        <span className={highlight ? "text-green-600" : "text-[--color-on-surface-variant]"}>{label}</span>
+        {subtext && <span className="ml-1 text-xs text-[--color-on-surface-variant] opacity-70">{subtext}</span>}
+      </div>
       <span className={cn("tabular-nums", highlight ? "text-green-600 font-semibold" : "font-medium text-[--color-on-surface]")}>{value}</span>
     </div>
   );
@@ -26,15 +28,8 @@ function CheckoutContent() {
 
   const { items, total, count, clear } = useCartStore();
   const [paymentMethod, setPaymentMethod] = useState<"upi" | "card" | "cod">("upi");
-  
-  // Hardcoded addresses since we removed complex address subcollections for simplicity
-  const addresses = [
-    { id: "addr_1", label: "Hostel Block A", line1: "Room 402, Block A", lat: 16.5, lng: 80.5 },
-    { id: "addr_2", label: "Academic Block", line1: "Near Library, Academic Block", lat: 16.5, lng: 80.5 }
-  ];
-  const [selectedAddressId, setSelectedAddressId] = useState<string>(addresses[0].id);
   const [isPaying, setIsPaying] = useState(false);
-  
+
   const { data: profile } = useProfile();
 
   // Redirect if cart is empty
@@ -48,15 +43,16 @@ function CheckoutContent() {
   const restaurantName = items[0]?.restaurantName;
 
   const subtotal = total();
-  const delivery_fee = 30;
-  const platform_fee = 5;
+  const delivery_fee = 0; // Free delivery — collect at main gate
   const discount = couponCode === "WELCOME" ? 50 : 0;
-  const grand_total = Math.max(0, subtotal + delivery_fee + platform_fee - discount);
+  const grand_total = Math.max(0, subtotal + delivery_fee - discount);
 
-  const displayBill = { subtotal, delivery_fee, platform_fee, discount, total: grand_total };
+  const displayBill = { subtotal, delivery_fee, discount, total: grand_total };
+
+  // Fixed address: everyone collects at main gate
+  const deliveryAddress = "Collect at Main Gate";
 
   const handlePayment = async () => {
-    const address = addresses.find((a) => a.id === selectedAddressId) ?? addresses[0];
     if (!profile) {
       toast.error("Please login to place an order");
       router.push("/login");
@@ -64,11 +60,9 @@ function CheckoutContent() {
     }
 
     setIsPaying(true);
-
     try {
-      // Simulate payment delay for non-COD
       if (paymentMethod !== "cod") {
-        await new Promise(r => setTimeout(r, 1500)); 
+        await new Promise(r => setTimeout(r, 1500));
       }
 
       const newOrderId = await createOrder({
@@ -79,7 +73,7 @@ function CheckoutContent() {
         restaurantName,
         items: items.map(i => ({
           menuItemId: i.id,
-          name: i.name,
+          name: i.variantLabel ? `${i.name} (${i.variantLabel})` : i.name,
           price: i.price,
           quantity: i.quantity,
         })),
@@ -87,12 +81,11 @@ function CheckoutContent() {
         deliveryFee: delivery_fee,
         discount,
         total: grand_total,
-        address: `${address.label} - ${address.line1}`,
+        address: deliveryAddress,
       });
 
       clear();
       router.push(`/order/${newOrderId}`);
-
     } catch (err: any) {
       toast.error(`Order failed: ${err.message}. Please try again.`);
       setIsPaying(false);
@@ -109,26 +102,20 @@ function CheckoutContent() {
       </div>
 
       <div className="space-y-5">
-        {/* Delivery Addresses */}
+        {/* Delivery Address — Fixed */}
         <section className="bg-[--color-surface-container-lowest] rounded-[--radius-lg] shadow-[--shadow-sm] border border-[--color-border] p-5">
-          <h2 className="font-bold text-lg text-[--color-on-surface] mb-4" style={{ fontFamily: "var(--font-heading)" }}>Delivery Address</h2>
-          <div className="space-y-3">
-            {addresses.map((addr: any) => (
-              <label key={addr.id}
-                className={cn("flex items-center gap-4 p-4 rounded-[--radius-md] border-2 cursor-pointer transition-colors",
-                  selectedAddressId === addr.id
-                    ? "border-[--color-primary] bg-[--color-primary-fixed]"
-                    : "border-[--color-border] hover:bg-[--color-surface-container-low]"
-                )}>
-                <input type="radio" name="address" value={addr.id} className="accent-[--color-primary]"
-                  checked={selectedAddressId === addr.id}
-                  onChange={() => setSelectedAddressId(addr.id)} />
-                <div>
-                  <p className="font-bold text-sm text-[--color-on-surface]">{addr.label}</p>
-                  <p className="text-xs text-[--color-on-surface-variant]">{addr.line1}</p>
-                </div>
-              </label>
-            ))}
+          <h2 className="font-bold text-lg text-[--color-on-surface] mb-4" style={{ fontFamily: "var(--font-heading)" }}>Pickup Address</h2>
+          <div className="flex items-start gap-3 p-4 rounded-[--radius-md] border-2 border-[--color-primary] bg-[--color-primary-fixed]">
+            <MapPin size={20} style={{ color: "var(--color-primary)" }} className="mt-0.5 shrink-0" />
+            <div>
+              <p className="font-bold text-[--color-on-surface]">Collect at Main Gate</p>
+              <p className="text-sm text-[--color-on-surface-variant] mt-0.5">
+                All orders must be collected at the main gate of VIT-AP Campus.
+              </p>
+              <p className="text-xs text-[--color-on-surface-variant] mt-1 italic">
+                🕔 Delivery time: Receive by Evening
+              </p>
+            </div>
           </div>
         </section>
 
@@ -137,9 +124,9 @@ function CheckoutContent() {
           <h2 className="font-bold text-lg text-[--color-on-surface] mb-4" style={{ fontFamily: "var(--font-heading)" }}>Payment Method</h2>
           <div className="space-y-3">
             {[
-              { id: "upi",  label: "UPI / Google Pay",     icon: Wallet    },
-              { id: "card", label: "Credit / Debit Card",  icon: CreditCard },
-              { id: "cod",  label: "Cash on Delivery",     icon: Banknote  },
+              { id: "upi",  label: "UPI / Google Pay",    icon: Wallet     },
+              { id: "card", label: "Credit / Debit Card", icon: CreditCard },
+              { id: "cod",  label: "Cash on Delivery",    icon: Banknote   },
             ].map(({ id, label, icon: Icon }) => (
               <label key={id}
                 className={cn("flex items-center justify-between p-4 rounded-[--radius-md] border-2 cursor-pointer transition-colors",
@@ -165,13 +152,18 @@ function CheckoutContent() {
           <h2 className="font-bold text-lg text-[--color-on-surface] mb-4" style={{ fontFamily: "var(--font-heading)" }}>Bill Details</h2>
           <div className="space-y-2.5 text-sm">
             <BillRow label="Subtotal" value={rupees(displayBill.subtotal)} />
-            <BillRow label="Delivery fee" value={rupees(displayBill.delivery_fee)} />
-            <BillRow label="Platform fee" value={rupees(displayBill.platform_fee)} />
+            <BillRow label="Delivery fee" value="FREE" />
             {displayBill.discount > 0 && (
               <BillRow label={`Coupon ${couponCode ? `(${couponCode})` : ""}`} value={`-${rupees(displayBill.discount)}`} highlight />
             )}
             <div className="border-t border-[--color-border] pt-2.5">
-              <BillRow label="Total" value={rupees(displayBill.total)} bold />
+              <div className="flex justify-between items-center font-bold text-base">
+                <span>Total</span>
+                <div className="text-right">
+                  <span>{rupees(displayBill.total)}</span>
+                  <span className="ml-1 text-xs font-normal text-[--color-on-surface-variant]">+ GST</span>
+                </div>
+              </div>
             </div>
           </div>
         </section>
@@ -191,7 +183,7 @@ function CheckoutContent() {
             {isPaying ? (
               <><Loader2 size={20} className="animate-spin" />Processing...</>
             ) : (
-              <>Pay {rupees(displayBill.total)} <ArrowRight size={20} /></>
+              <>Pay {rupees(displayBill.total)} + GST <ArrowRight size={20} /></>
             )}
           </button>
           <p className="text-xs text-[--color-on-surface-variant] text-center mt-3">

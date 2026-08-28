@@ -1,11 +1,12 @@
 "use client";
-import { useState, useEffect, useCallback } from "react";
-import { Loader2, CheckCircle2, XCircle, Clock, Store, Phone, MapPin, ChevronDown } from "lucide-react";
+import { useState, useEffect } from "react";
+import { Loader2, CheckCircle2, XCircle, Clock, Store, Phone, MapPin } from "lucide-react";
 import toast from "react-hot-toast";
 import { cn } from "@/lib/utils";
-import { getPendingApplications, updateApplicationStatus, type PartnerApplication } from "@/lib/db/partners";
-import { collection, addDoc, serverTimestamp } from "firebase/firestore";
 import { db } from "@/lib/firebase";
+import { collection, query, orderBy, onSnapshot } from "firebase/firestore";
+import { updateApplicationStatus, type PartnerApplication } from "@/lib/db/partners";
+import { addDoc, serverTimestamp } from "firebase/firestore";
 
 const STATUS_STYLES: Record<string, string> = {
   pending:  "bg-yellow-50 text-yellow-700 border-yellow-200",
@@ -16,40 +17,59 @@ const STATUS_STYLES: Record<string, string> = {
 export function ApplicationsTab() {
   const [applications, setApplications] = useState<PartnerApplication[]>([]);
   const [loading, setLoading]           = useState(true);
+  const [error, setError]               = useState<string | null>(null);
   const [filter, setFilter]             = useState<"all" | "pending" | "approved" | "declined">("pending");
   const [processingId, setProcessingId] = useState<string | null>(null);
   const [noteFor, setNoteFor]           = useState<string | null>(null);
   const [note, setNote]                 = useState("");
 
-  const fetchApplications = useCallback(async () => {
+  // Real-time subscription to partner_applications
+  useEffect(() => {
     setLoading(true);
+    setError(null);
     try {
-      const data = await getPendingApplications();
-      setApplications(data);
-    } catch {
-      toast.error("Failed to load applications");
-    } finally {
+      const q = query(
+        collection(db, "partner_applications"),
+        orderBy("createdAt", "desc")
+      );
+      const unsub = onSnapshot(
+        q,
+        (snap) => {
+          setApplications(snap.docs.map((d) => ({ id: d.id, ...d.data() } as PartnerApplication)));
+          setLoading(false);
+          setError(null);
+        },
+        (err) => {
+          console.error("Applications snapshot error:", err);
+          if (err.code === "failed-precondition") {
+            setError("Firestore index required. Please create a composite index on partner_applications (createdAt DESC) in your Firebase console, or check the browser console for the index creation link.");
+          } else if (err.code === "permission-denied") {
+            setError("Permission denied. Make sure your Firestore rules allow admin access to partner_applications.");
+          } else {
+            setError(`Failed to load applications: ${err.message}`);
+          }
+          setLoading(false);
+        }
+      );
+      return () => unsub();
+    } catch (err: any) {
+      setError(`Setup error: ${err.message}`);
       setLoading(false);
     }
   }, []);
 
-  useEffect(() => { fetchApplications(); }, []);
-
   const handleApprove = async (app: PartnerApplication) => {
     setProcessingId(app.id);
     try {
-      // 1. Update application status
       await updateApplicationStatus(app.id, "approved", note || undefined);
-
-      // 2. Create a restaurant document so it appears on the site
       await addDoc(collection(db, "restaurants"), {
         name: app.restaurantName,
         slug: app.restaurantName.toLowerCase().replace(/\s+/g, "-").replace(/[^a-z0-9-]/g, ""),
         cuisine: app.cuisine,
         rating: 0,
         reviewCount: 0,
-        deliveryTime: 30,
-        deliveryFee: 15,
+        deliveryTime: 0,
+        deliveryFee: 0,
         imageUrl: "",
         isOpen: true,
         isVeg: false,
@@ -58,11 +78,7 @@ export function ApplicationsTab() {
         address: app.address,
         createdAt: serverTimestamp(),
       });
-
       toast.success(`✅ "${app.restaurantName}" approved and added to the platform!`);
-      setApplications((prev) =>
-        prev.map((a) => a.id === app.id ? { ...a, status: "approved" } : a)
-      );
     } catch (err: any) {
       toast.error(err.message ?? "Failed to approve");
     } finally {
@@ -77,9 +93,6 @@ export function ApplicationsTab() {
     try {
       await updateApplicationStatus(appId, "declined", note || undefined);
       toast.success(`Declined application for "${restaurantName}"`);
-      setApplications((prev) =>
-        prev.map((a) => a.id === appId ? { ...a, status: "declined" } : a)
-      );
     } catch (err: any) {
       toast.error(err.message ?? "Failed to decline");
     } finally {
@@ -98,7 +111,7 @@ export function ApplicationsTab() {
         <h2 className="font-bold text-[--color-on-surface] text-lg" style={{ fontFamily: "var(--font-heading)" }}>
           Partner Applications
         </h2>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-wrap">
           {(["pending", "approved", "declined", "all"] as const).map((s) => (
             <button
               key={s}
@@ -114,11 +127,16 @@ export function ApplicationsTab() {
               {s}
             </button>
           ))}
-          <button onClick={fetchApplications} className="px-3 py-1.5 rounded-[--radius-full] text-xs font-semibold border border-[--color-border] text-[--color-on-surface-variant] hover:bg-[--color-surface-container-low] transition-colors">
-            Refresh
-          </button>
         </div>
       </div>
+
+      {/* Error state */}
+      {error && (
+        <div className="rounded-[--radius-lg] border border-red-200 bg-red-50 p-4">
+          <p className="font-semibold text-red-700 text-sm mb-1">⚠️ Error loading applications</p>
+          <p className="text-red-600 text-xs">{error}</p>
+        </div>
+      )}
 
       {/* List */}
       {loading ? (

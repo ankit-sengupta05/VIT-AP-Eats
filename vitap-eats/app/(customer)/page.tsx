@@ -2,39 +2,38 @@
 import { useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { Search, MapPin, ChevronRight, Flame, Star, TrendingUp, Clock, Zap } from "lucide-react";
+import { Search, MapPin, ChevronRight, Flame, Star, TrendingUp, Package } from "lucide-react";
 import RestaurantCard from "@/components/customer/RestaurantCard";
 import { Badge } from "@/components/ui/Badge";
-import { RestaurantGridSkeleton, Skeleton } from "@/components/ui/Skeleton";
-import { useRestaurants } from "@/lib/hooks";
+import { RestaurantGridSkeleton } from "@/components/ui/Skeleton";
+import { useRestaurants, useMenuItems } from "@/lib/hooks";
 import { useLocationStore } from "@/lib/store/location";
+import { DishCard } from "@/components/customer/DishCard";
 
 const CUISINES = [
-  { id: "all",      label: "All",        emoji: "🍽️" },
-  { id: "biryani",  label: "Biryani",    emoji: "🍛" },
-  { id: "pizza",    label: "Pizza",      emoji: "🍕" },
-  { id: "burgers",  label: "Burgers",    emoji: "🍔" },
-  { id: "south",    label: "South",      emoji: "🥘" },
-  { id: "chinese",  label: "Chinese",    emoji: "🥡" },
-  { id: "desserts", label: "Desserts",   emoji: "🍦" },
-  { id: "healthy",  label: "Healthy",    emoji: "🥗" },
-  { id: "tea",      label: "Tea & More", emoji: "☕" },
+  { id: "all",   label: "All",   emoji: "🍽️" },
+  { id: "pizza", label: "Pizza", emoji: "🍕" },
+  { id: "wraps", label: "Wraps", emoji: "🌯" },
 ];
 
+// Real VIT-BITES top picks from the menu
 const TOP_DISHES = [
-  { id: "d1", name: "Chicken Biryani",      price: 149, restaurant: "Spice Garden",   image: "https://images.unsplash.com/photo-1563379091339-03b21ab4a4f8?w=400&q=80", rating: 4.8 },
-  { id: "d2", name: "Veg Thali",            price: 89,  restaurant: "Campus Tiffins", image: "https://images.unsplash.com/photo-1567188040759-fb8a883dc6d8?w=400&q=80", rating: 4.7 },
-  { id: "d3", name: "Margherita Pizza",     price: 199, restaurant: "Pizza Palace",   image: "https://images.unsplash.com/photo-1513104890138-7c749659a591?w=400&q=80", rating: 4.5 },
-  { id: "d4", name: "Paneer Butter Masala", price: 169, restaurant: "Spice Garden",   image: "https://images.unsplash.com/photo-1631452180519-c014fe946bc7?w=400&q=80", rating: 4.6 },
+  { id: "d1", name: "Dragonfire Margherita",  price: 150, restaurant: "VIT-BITES", image: "https://images.unsplash.com/photo-1513104890138-7c749659a591?w=400&q=80", rating: 4.8 },
+  { id: "d2", name: "Paneer Golden Delight",  price: 180, restaurant: "VIT-BITES", image: "https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?w=400&q=80", rating: 4.7 },
+  { id: "d3", name: "Death by Cheese",        price: 209, restaurant: "VIT-BITES", image: "https://images.unsplash.com/photo-1598023696416-0193a0bcd302?w=400&q=80", rating: 4.9 },
+  { id: "d4", name: "Cheese Melt Paneer Wrap", price: 150, restaurant: "VIT-BITES", image: "https://images.unsplash.com/photo-1626700051175-6818013e1d4f?w=400&q=80", rating: 4.6 },
 ];
 
 export default function HomePage() {
   const [activeCuisine, setActiveCuisine] = useState("all");
-  const { lat, lng, label } = useLocationStore();
-  const { data: restaurants, isLoading, isError } = useRestaurants(
+  const { label } = useLocationStore();
+  
+  const { data: restaurants, isLoading: isResLoading, isError: isResError } = useRestaurants(
     activeCuisine === "all" ? undefined : activeCuisine,
-    lat,
-    lng
+  );
+  
+  const { data: menuItems, isLoading: isMenuLoading } = useMenuItems(
+    activeCuisine === "all" ? undefined : activeCuisine
   );
 
   return (
@@ -56,10 +55,10 @@ export default function HomePage() {
             <h1 className="text-3xl md:text-5xl font-extrabold text-white mb-3 leading-tight" style={{ fontFamily: "var(--font-heading)" }}>
               Hungry? <br className="sm:hidden" />
               <span className="opacity-90">We deliver</span>{" "}
-              <span className="underline decoration-white/40">fast.</span>
+              <span className="underline decoration-white/40">fresh.</span>
             </h1>
             <p className="text-white/80 text-base md:text-lg mb-6">
-              Food from the best campus restaurants in 20–40 min.
+              Campus food from VIT-BITES, delivered to the Main Gate.
             </p>
             <Link href="/search" className="flex items-center gap-3 bg-white rounded-[--radius-lg] px-4 py-3.5 shadow-[--shadow-lg] hover:shadow-[--shadow-xl] transition-shadow max-w-lg">
               <Search size={18} className="shrink-0" style={{ color: "var(--color-primary)" }} />
@@ -67,7 +66,11 @@ export default function HomePage() {
               <span className="text-xs text-white font-semibold px-3 py-1 rounded-[--radius-full] shrink-0" style={{ background: "var(--color-primary)" }}>Search</span>
             </Link>
             <div className="flex gap-6 mt-6">
-              {[{ icon: Zap, value: "20 min", label: "Avg. delivery" }, { icon: Star, value: "4.6★", label: "Avg. rating" }, { icon: Flame, value: "50+", label: "Restaurants" }].map(({ icon: Icon, value, label }) => (
+              {[
+                { icon: Star,    value: "4.8★",       label: "Avg. rating"   },
+                { icon: Flame,   value: "Fresh Daily", label: "Made fresh"    },
+                { icon: Package, value: "Main Gate",   label: "Easy pickup"   },
+              ].map(({ icon: Icon, value, label }) => (
                 <div key={label} className="text-white">
                   <div className="flex items-center gap-1.5 font-bold text-lg"><Icon size={16} className="opacity-80" />{value}</div>
                   <div className="text-white/60 text-xs">{label}</div>
@@ -151,52 +154,82 @@ export default function HomePage() {
           </div>
         </section>
 
-        {/* ── Restaurants Grid ── */}
+        {/* ── Restaurants & Items Grid ── */}
         <section>
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-xl font-bold text-[--color-on-surface]" style={{ fontFamily: "var(--font-heading)" }}>
-              <TrendingUp size={20} className="inline mr-2 text-[--color-primary]" />Restaurants Near You
+              {activeCuisine === "all" ? (
+                <><TrendingUp size={20} className="inline mr-2 text-[--color-primary]" /> All Restaurants</>
+              ) : (
+                <><Flame size={20} className="inline mr-2 text-[--color-primary]" /> {CUISINES.find(c => c.id === activeCuisine)?.label ?? ""} Menu</>
+              )}
             </h2>
-            <span className="text-xs text-[--color-on-surface-variant] flex items-center gap-1">
-              <Clock size={12} /> Sorted by delivery time
-            </span>
           </div>
 
-          {isLoading && <RestaurantGridSkeleton />}
-
-          {isError && (
-            <div className="text-center py-16">
-              <p className="text-5xl mb-3">😕</p>
-              <p className="font-semibold text-[--color-on-surface]">Could not load restaurants</p>
-              <p className="text-sm text-[--color-on-surface-variant]">Check your connection and try again</p>
+          {/* If All is selected, show restaurants */}
+          {activeCuisine === "all" ? (
+            <>
+              {isResLoading && <RestaurantGridSkeleton />}
+              {isResError && (
+                <div className="text-center py-16">
+                  <p className="text-5xl mb-3">😕</p>
+                  <p className="font-semibold text-[--color-on-surface]">Could not load restaurants</p>
+                  <p className="text-sm text-[--color-on-surface-variant]">Check your connection and try again</p>
+                </div>
+              )}
+              {restaurants && restaurants.length > 0 && (
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
+                  {restaurants.map((r) => <RestaurantCard key={r.id} r={{
+                    id: r.id, slug: r.slug, name: r.name,
+                    cuisine: r.cuisine, rating: r.rating,
+                    deliveryTime: 0, deliveryFee: r.deliveryFee,
+                    minOrder: 0, image: r.imageUrl, isOpen: r.isOpen,
+                    isVeg: r.isVeg, discount: undefined,
+                  }} />)}
+                </div>
+              )}
+              {restaurants && restaurants.length === 0 && (
+                <div className="text-center py-16">
+                  <p className="text-5xl mb-3">🍽️</p>
+                  <p className="font-semibold text-[--color-on-surface]">No restaurants open right now</p>
+                </div>
+              )}
+              <div className="text-center mt-8">
+                <Link href="/search" className="inline-flex items-center gap-2 px-6 py-3 rounded-[--radius-full] border-2 font-semibold text-sm transition-colors hover:bg-[--color-primary] hover:text-white hover:border-[--color-primary]"
+                  style={{ borderColor: "var(--color-primary)", color: "var(--color-primary)" }}>
+                  See all restaurants <ChevronRight size={16} />
+                </Link>
+              </div>
+            </>
+          ) : (
+            /* If a category is selected, show matching menu items directly */
+            <div className="bg-[--color-surface-container-lowest] rounded-[--radius-lg] border border-[--color-border] p-4">
+              {isMenuLoading ? (
+                <div className="space-y-4">
+                  {[1, 2, 3].map(i => <div key={i} className="h-24 bg-[--color-surface-container] animate-pulse rounded-md" />)}
+                </div>
+              ) : menuItems && menuItems.length > 0 ? (
+                <div className="space-y-2">
+                  {menuItems.map(item => {
+                    const rName = restaurants?.find(r => r.id === item.restaurantId)?.name || "VIT-BITES";
+                    return (
+                      <DishCard 
+                        key={item.id} 
+                        dish={item} 
+                        restaurantId={item.restaurantId} 
+                        restaurantName={rName} 
+                      />
+                    );
+                  })}
+                </div>
+              ) : (
+                <div className="text-center py-12">
+                  <p className="text-4xl mb-3">🍽️</p>
+                  <p className="font-semibold text-[--color-on-surface]">No items found in this category.</p>
+                </div>
+              )}
             </div>
           )}
-
-          {restaurants && restaurants.length > 0 && (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
-              {restaurants.map((r) => <RestaurantCard key={r.id} r={{
-                id: r.id, slug: r.slug, name: r.name,
-                cuisine: r.cuisine, rating: r.rating,
-                deliveryTime: r.deliveryTime, deliveryFee: r.deliveryFee,
-                minOrder: 0, image: r.imageUrl, isOpen: r.isOpen,
-                isVeg: r.isVeg, discount: undefined,
-              }} />)}
-            </div>
-          )}
-
-          {restaurants && restaurants.length === 0 && (
-            <div className="text-center py-16">
-              <p className="text-5xl mb-3">🍽️</p>
-              <p className="font-semibold text-[--color-on-surface]">No restaurants open right now</p>
-            </div>
-          )}
-
-          <div className="text-center mt-8">
-            <Link href="/search" className="inline-flex items-center gap-2 px-6 py-3 rounded-[--radius-full] border-2 font-semibold text-sm transition-colors hover:bg-[--color-primary] hover:text-white hover:border-[--color-primary]"
-              style={{ borderColor: "var(--color-primary)", color: "var(--color-primary)" }}>
-              See all restaurants <ChevronRight size={16} />
-            </Link>
-          </div>
         </section>
       </div>
 

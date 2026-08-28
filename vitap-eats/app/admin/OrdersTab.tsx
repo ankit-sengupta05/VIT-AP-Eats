@@ -15,12 +15,12 @@ const STATUS_STYLES: Record<string, { label: string; cls: string }> = {
 };
 
 function buildWhatsAppUrl(order: Order): string {
-  const phone = order.userPhone?.replace(/\D/g, ""); // strip non-digits
+  const phone = order.userPhone?.replace(/\D/g, "");
   const shortId = order.id.slice(0, 6).toUpperCase();
   const itemsList = order.items.map((i) => `${i.quantity}× ${i.name}`).join(", ");
   const text = encodeURIComponent(
     `Hi ${order.userName}! 👋\n\nYour order #${shortId} from VIT-AP Eats has been *confirmed* ✅\n\n` +
-    `🍽️ Items: ${itemsList}\n💰 Total: ₹${order.total}\n\nExpected delivery: ~30 mins. Thank you! 🚀`
+    `🍽️ Items: ${itemsList}\n💰 Total: ₹${order.total}+GST\n\nReceive by Evening at Main Gate. Thank you! 🚀`
   );
   return `https://wa.me/${phone}?text=${text}`;
 }
@@ -31,7 +31,6 @@ export function OrdersTab() {
   const [updatingId, setUpdatingId] = useState<string | null>(null);
   const [menuOpenId, setMenuOpenId] = useState<string | null>(null);
 
-  // Real-time Firestore subscription
   useEffect(() => {
     const unsub = subscribeToAllOrders(setOrders);
     return () => unsub();
@@ -131,9 +130,9 @@ export function OrdersTab() {
                 </div>
 
                 <div className="flex flex-col items-end gap-2 shrink-0 relative">
-                  <span className="font-extrabold tabular-nums text-sm">{rupees(order.total)}</span>
+                  <span className="font-extrabold tabular-nums text-sm">{rupees(order.total)} <span className="font-normal text-xs text-[--color-on-surface-variant]">+GST</span></span>
 
-                  {/* ✅ WhatsApp confirm button */}
+                  {/* WhatsApp confirm button */}
                   {order.userPhone && (
                     <a
                       href={waUrl}
@@ -160,36 +159,11 @@ export function OrdersTab() {
                       <div className="px-3 py-1.5 text-xs font-bold text-gray-400 uppercase tracking-wider">
                         Update Status
                       </div>
-                      <button
-                        onClick={() => handleUpdateStatus(order.id, "confirmed")}
-                        className="w-full text-left px-4 py-2 hover:bg-indigo-50 text-indigo-600 font-medium"
-                      >
-                        ✅ Confirm
-                      </button>
-                      <button
-                        onClick={() => handleUpdateStatus(order.id, "preparing")}
-                        className="w-full text-left px-4 py-2 hover:bg-amber-50 text-amber-600 font-medium"
-                      >
-                        🍳 Preparing
-                      </button>
-                      <button
-                        onClick={() => handleUpdateStatus(order.id, "out_for_delivery")}
-                        className="w-full text-left px-4 py-2 hover:bg-orange-50 text-orange-600 font-medium"
-                      >
-                        🛵 Out for Delivery
-                      </button>
-                      <button
-                        onClick={() => handleUpdateStatus(order.id, "delivered")}
-                        className="w-full text-left px-4 py-2 hover:bg-green-50 text-green-600 font-medium"
-                      >
-                        ✔️ Delivered
-                      </button>
-                      <button
-                        onClick={() => handleUpdateStatus(order.id, "cancelled")}
-                        className="w-full text-left px-4 py-2 hover:bg-red-50 text-red-600 font-medium"
-                      >
-                        ❌ Cancel
-                      </button>
+                      <button onClick={() => handleUpdateStatus(order.id, "confirmed")} className="w-full text-left px-4 py-2 hover:bg-indigo-50 text-indigo-600 font-medium">✅ Confirm</button>
+                      <button onClick={() => handleUpdateStatus(order.id, "preparing")} className="w-full text-left px-4 py-2 hover:bg-amber-50 text-amber-600 font-medium">🍳 Preparing</button>
+                      <button onClick={() => handleUpdateStatus(order.id, "out_for_delivery")} className="w-full text-left px-4 py-2 hover:bg-orange-50 text-orange-600 font-medium">🛵 Out for Delivery</button>
+                      <button onClick={() => handleUpdateStatus(order.id, "delivered")} className="w-full text-left px-4 py-2 hover:bg-green-50 text-green-600 font-medium">✔️ Delivered</button>
+                      <button onClick={() => handleUpdateStatus(order.id, "cancelled")} className="w-full text-left px-4 py-2 hover:bg-red-50 text-red-600 font-medium">❌ Cancel</button>
                     </div>
                   )}
                 </div>
