@@ -74,26 +74,3 @@
   --shadow-primary: 0 4px 14px rgba(77,8,5,0.30);
 }
 
-/* ── Dark mode override (opt-in via OS preference) ──────────
-   Keeps the same hue family but inverts light/dark roles.   */
-@media (prefers-color-scheme: dark) {
-  :root {
-    --color-bg:                        #1A0604;
-    --color-surface:                   #240906;
-    --color-surface-container-lowest:  #2E0C08;
-    --color-surface-container-low:     #3A100A;
-    --color-surface-container:         #47130C;
-    --color-surface-container-high:    #55170E;
-
-    --color-on-surface:         #FAECD7;
-    --color-on-surface-variant: #D4B89A;
-    --color-text-primary:       #FAECD7;
-    --color-text-secondary:     #C4A882;
-
-    --color-border:          #5C2018;
-    --color-outline:         #7A2E1F;
-    --color-outline-variant: #4D1810;
-
-    --color-primary-fixed: #3a100a;
-  }
-}

@@ -37,7 +37,6 @@ export function DishCard({
   return (
     <div
       className="flex gap-3 items-start py-4"
-      style={{ borderBottom: "1px solid var(--color-border)" }}
     >
       {/* ── Left: text ── */}
       <div className="flex-1 min-w-0 pr-1">
@@ -78,10 +77,9 @@ export function DishCard({
                 const v = dish.variants?.find((v: MenuItemVariant) => v.label === e.target.value);
                 setSelectedVariant(v ?? null);
               }}
-              className="appearance-none pl-3 pr-7 py-1 text-xs font-semibold cursor-pointer"
+              className="appearance-none pl-4 pr-8 py-1.5 text-xs font-bold cursor-pointer shadow-[--shadow-sm]"
               style={{
                 background: "var(--color-surface-container-lowest)",
-                border: "1.5px solid var(--color-border)",
                 borderRadius: "var(--radius-full)",
                 color: "var(--color-on-surface)",
               }}
@@ -101,12 +99,14 @@ export function DishCard({
         )}
 
         {/* Price */}
-        <span
-          className="font-extrabold tabular-nums"
-          style={{ fontSize: "0.9rem", color: "var(--color-on-surface)" }}
-        >
-          ₹{effectivePrice}
-        </span>
+        <div className="mt-1">
+          <span
+            className="font-extrabold tabular-nums"
+            style={{ fontSize: "1rem", color: "var(--color-on-surface)" }}
+          >
+            ₹{effectivePrice}
+          </span>
+        </div>
       </div>
 
       {/* ── Right: image + add button ── */}
@@ -117,9 +117,9 @@ export function DishCard({
           style={{
             width: 96,
             height: 80,
-            borderRadius: "var(--radius-lg)",
+            borderRadius: "var(--radius-xl)",
             background: "var(--color-surface-container)",
-            border: "1px solid var(--color-border)",
+            boxShadow: "var(--shadow-sm)"
           }}
         >
           {dish.imageUrl ? (
@@ -144,9 +144,9 @@ export function DishCard({
               width: 96,
               height: 32,
               borderRadius: "var(--radius-full)",
-              background: "var(--color-surface-container-lowest)",
-              border: "2px solid var(--color-primary)",
+              background: "var(--color-primary-fixed)",
               color: "var(--color-primary)",
+              boxShadow: "var(--shadow-sm)",
               fontFamily: "var(--font-heading)",
             }}
           >

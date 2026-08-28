@@ -2,6 +2,7 @@
 import { useState, useEffect, Suspense } from "react";
 import { useCartStore } from "@/lib/store/cart";
 import { useProfile } from "@/lib/hooks";
+import { useSession } from "@/lib/hooks/useSession";
 import { rupees, cn } from "@/lib/utils";
 import { MapPin, CreditCard, Wallet, ChevronLeft, ArrowRight, ShieldCheck, Loader2, Banknote, CheckCircle2 } from "lucide-react";
 import Link from "next/link";
@@ -31,6 +32,7 @@ function CheckoutContent() {
   const [isPaying, setIsPaying] = useState(false);
 
   const { data: profile } = useProfile();
+  const { user } = useSession();
 
   // Redirect if cart is empty
   useEffect(() => {
@@ -53,7 +55,7 @@ function CheckoutContent() {
   const deliveryAddress = "Collect at Main Gate";
 
   const handlePayment = async () => {
-    if (!profile) {
+    if (!user) {
       toast.error("Please login to place an order");
       router.push("/login");
       return;
@@ -66,9 +68,9 @@ function CheckoutContent() {
       }
 
       const newOrderId = await createOrder({
-        userId: profile.uid,
-        userName: profile.fullName,
-        userPhone: profile.phone,
+        userId: user.uid,
+        userName: profile?.fullName || user.displayName || "Unknown User",
+        userPhone: profile?.phone || "No phone",
         restaurantId,
         restaurantName,
         items: items.map(i => ({

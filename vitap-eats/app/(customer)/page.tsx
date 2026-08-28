@@ -152,7 +152,6 @@ export default function HomePage() {
                     className="w-14 h-14 flex items-center justify-center text-2xl transition-all"
                     style={{
                       borderRadius: "var(--radius-xl)",
-                      border: active ? "none" : "1.5px solid var(--color-border)",
                       background: active ? "var(--color-primary)" : "var(--color-surface-container-lowest)",
                       boxShadow: active ? "var(--shadow-primary)" : "var(--shadow-sm)",
                     }}
@@ -199,7 +198,6 @@ export default function HomePage() {
                   width: 148,
                   background: "var(--color-surface-container-lowest)",
                   borderRadius: "var(--radius-xl)",
-                  border: "1px solid var(--color-border)",
                   boxShadow: "var(--shadow-md)",
                 }}
               >
@@ -348,7 +346,7 @@ export default function HomePage() {
               style={{
                 background: "var(--color-surface-container-lowest)",
                 borderRadius: "var(--radius-xl)",
-                border: "1px solid var(--color-border)",
+                boxShadow: "var(--shadow-sm)",
                 padding: "0 1rem",
               }}
             >
@@ -392,7 +390,6 @@ export default function HomePage() {
         className="px-4 py-6 mt-4"
         style={{
           background: "var(--color-surface-container)",
-          borderTop: "1px solid var(--color-border)",
         }}
       >
         <div className="flex items-center justify-between gap-3 text-xs" style={{ color: "var(--color-on-surface-variant)" }}>

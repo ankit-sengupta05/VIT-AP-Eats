@@ -42,7 +42,6 @@ export default function RestaurantCard({ r }: { r: Restaurant }) {
       style={{
         background: "var(--color-surface-container-lowest)",
         borderRadius: "var(--radius-xl)",
-        border: "1px solid var(--color-border)",
         boxShadow: "var(--shadow-md)",
       }}
     >
@@ -107,7 +106,6 @@ export default function RestaurantCard({ r }: { r: Restaurant }) {
           style={{
             background: "var(--color-surface-container-lowest)",
             borderRadius: "var(--radius-full)",
-            border: "1px solid var(--color-border)",
             boxShadow: "var(--shadow-sm)",
           }}
         >
@@ -156,7 +154,7 @@ export default function RestaurantCard({ r }: { r: Restaurant }) {
         {/* Bottom row */}
         <div
           className="flex items-center gap-2 text-xs font-medium pt-2"
-          style={{ borderTop: "1px solid var(--color-border)", color: "var(--color-on-surface-variant)" }}
+          style={{ color: "var(--color-on-surface-variant)" }}
         >
           <span
             className="flex items-center gap-1 px-2 py-0.5"
