@@ -64,19 +64,16 @@ body {
   line-height: 1.55;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  /* Portrait-mobile max-width container */
-  max-width: 480px;
-  margin: 0 auto;
+  width: 100%;
   min-height: 100dvh;
+  margin: 0;
   position: relative;
-  /* Subtle left/right shadow to show the "phone frame" on wide screens */
-  box-shadow: 0 0 60px rgba(77,8,5,0.18);
+  box-shadow: none;
 }
 
-/* On ≥768px keep desktop layout unlimited */
 @media (min-width: 768px) {
   html { background-color: var(--color-bg); }
-  body { max-width: 100%; box-shadow: none; }
+  body { width: 100%; max-width: none; }
 }
 
 h1, h2, h3, h4, h5, h6 {
@@ -133,10 +130,8 @@ button:active, [role="button"]:active { transform: scale(0.96); }
 .bottom-nav {
   position: fixed;
   bottom: 0;
-  left: 50%;
-  transform: translateX(-50%);
+  left: 0;
   width: 100%;
-  max-width: 480px;
   background-color: var(--color-surface-container-lowest);
   border-top: 1px solid var(--color-border);
   display: flex;
@@ -146,7 +141,7 @@ button:active, [role="button"]:active { transform: scale(0.96); }
   z-index: 50;
 }
 @media (min-width: 768px) {
-  .bottom-nav { max-width: 100%; left: 0; transform: none; }
+  .bottom-nav { left: 0; width: 100%; }
 }
 
 /* ---- Input base ---- */

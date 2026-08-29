@@ -12,12 +12,21 @@ import { onAuthStateChanged } from "firebase/auth";
 /** Waits for Firebase Auth to restore the session before returning uid */
 function useAuthUid() {
   const [uid, setUid] = useState<string | null | undefined>(undefined);
+
   useEffect(() => {
+    const syncUid = () => {
+      const currentUser = auth && typeof auth === "object" && "currentUser" in auth ? auth.currentUser : null;
+      setUid(currentUser ? currentUser.uid : null);
+    };
+
+    syncUid();
     const unsub = onAuthStateChanged(auth, (user) => {
       setUid(user ? user.uid : null);
     });
+
     return () => unsub();
   }, []);
+
   return uid;
 }
 
