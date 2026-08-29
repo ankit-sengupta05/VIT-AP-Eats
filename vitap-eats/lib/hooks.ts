@@ -61,6 +61,28 @@ export function useRestaurants(cuisine?: string) {
   });
 }
 
+function groupMenuByCategory(menuItems: MenuItem[]) {
+  const grouped = new Map<string, { label: string; items: MenuItem[] }>();
+
+  for (const item of menuItems) {
+    const rawCategory = (item.category ?? "Other").trim() || "Other";
+    const key = rawCategory.toLowerCase();
+    const existing = grouped.get(key);
+
+    if (existing) {
+      existing.items.push(item);
+      continue;
+    }
+
+    grouped.set(key, { label: rawCategory, items: [item] });
+  }
+
+  const ordered = Array.from(grouped.entries()).sort(([a], [b]) => a.localeCompare(b));
+  return Object.fromEntries(
+    ordered.map(([, value]) => [value.label, value.items])
+  ) as Record<string, MenuItem[]>;
+}
+
 export function useRestaurant(slug: string) {
   return useQuery({
     queryKey: ["restaurant", slug],
@@ -68,21 +90,8 @@ export function useRestaurant(slug: string) {
       const rest = await getRestaurantBySlug(slug);
       if (!rest) return null;
       const menuItems = await getMenu(rest.id);
-      const menu = menuItems.reduce((acc, item) => {
-        const rawCategory = (item.category ?? "Other").trim() || "Other";
-        const key = rawCategory.toLowerCase();
-        const displayLabel = rawCategory;
-        if (!acc[key]) acc[key] = { label: displayLabel, items: [] as MenuItem[] };
-        acc[key].items.push(item);
-        return acc;
-      }, {} as Record<string, { label: string; items: MenuItem[] }>);
-
-      return {
-        ...rest,
-        menu: Object.fromEntries(
-          Object.entries(menu).map(([key, value]) => [value.label, value.items])
-        ),
-      };
+      const menu = groupMenuByCategory(menuItems);
+      return { ...rest, menu };
     },
     enabled: !!slug,
     staleTime: 2 * 60 * 1000,

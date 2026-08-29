@@ -32,10 +32,14 @@ if (isConfigured) {
   db      = getFirestore(app);
   storage = getStorage(app);
 } else {
-  // Stub exports — used only during static pre-rendering in CI.
-  // At runtime in the browser, real env vars are always present.
+  // Safe no-op stubs so the app can still render on local/dev machines
+  // without Firebase env vars while preserving the auth runtime hooks.
   app     = {} as FirebaseApp;
-  auth    = {} as Auth;
+  auth    = {
+    currentUser: null,
+    onAuthStateChanged: () => () => undefined,
+    signOut: async () => undefined,
+  } as unknown as Auth;
   db      = {} as Firestore;
   storage = {} as FirebaseStorage;
 }

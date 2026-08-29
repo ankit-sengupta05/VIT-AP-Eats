@@ -47,8 +47,11 @@ export default function RestaurantPage({ params }: { params: Promise<{ slug: str
   }
 
   const restaurant = data;
-  const menuSections = Object.entries<any[]>(restaurant.menu ?? {});
-  const currentSection = (activeSection || menuSections[0]?.[0]) ?? "";
+  const menuSections = Object.entries<Record<string, any>>(restaurant.menu ?? {}).sort(([a], [b]) => a.localeCompare(b));
+  const currentSection = menuSections.some(([cat]) => cat === activeSection)
+    ? activeSection
+    : menuSections[0]?.[0] ?? "";
+  const visibleSections = menuSections.filter(([cat]) => cat === currentSection);
 
   return (
     <div className="min-h-screen">
@@ -107,8 +110,8 @@ export default function RestaurantPage({ params }: { params: Promise<{ slug: str
               ))}
             </div>
 
-            {menuSections.map(([cat, items]) => (
-              <div key={cat} className={cn(currentSection !== cat && "hidden md:block")}>
+            {visibleSections.map(([cat, items]) => (
+              <div key={cat} className="block">
                 <h2 className="text-lg font-bold text-[--color-on-surface] mb-2 mt-4 first:mt-0" style={{ fontFamily: "var(--font-heading)" }}>{cat}</h2>
                 {items.map((dish: any) => (
                   <DishCard key={dish.id} dish={dish} restaurantId={restaurant.id} restaurantName={restaurant.name} onConflict={handleConflict} />
