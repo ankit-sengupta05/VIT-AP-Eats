@@ -7,21 +7,34 @@ import { getUserProfile } from "@/lib/db/users";
 import { auth } from "@/lib/firebase";
 import { onAuthStateChanged } from "firebase/auth";
 
+function getStoredUid(): string | null {
+  if (typeof document === "undefined") return null;
+  const match = document.cookie
+    .split("; ")
+    .find((entry) => entry.startsWith("app_uid="));
+  if (!match) return null;
+  const value = decodeURIComponent(match.split("=").slice(1).join("="));
+  return value || null;
+}
+
 /* ─── Auth-state aware uid hook ─────────────────────────────────────────── */
 
-/** Waits for Firebase Auth to restore the session before returning uid */
+/** Returns the current signed-in uid, falling back to the persisted app_uid cookie so reloads recover the session immediately. */
 function useAuthUid() {
   const [uid, setUid] = useState<string | null | undefined>(undefined);
 
   useEffect(() => {
     const syncUid = () => {
       const currentUser = auth && typeof auth === "object" && "currentUser" in auth ? auth.currentUser : null;
-      setUid(currentUser ? currentUser.uid : null);
+      const persistedUid = getStoredUid();
+      const resolvedUid = currentUser?.uid ?? persistedUid ?? null;
+      setUid(resolvedUid);
     };
 
     syncUid();
     const unsub = onAuthStateChanged(auth, (user) => {
-      setUid(user ? user.uid : null);
+      const persistedUid = getStoredUid();
+      setUid(user ? user.uid : persistedUid ?? null);
     });
 
     return () => unsub();

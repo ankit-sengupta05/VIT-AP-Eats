@@ -55,16 +55,19 @@ service cloud.firestore {
     // ── Orders ────────────────────────────────────────────────
     match /orders/{orderId} {
       // Customers can only read their own orders.
+      // We support both the canonical userId key and the compatibility customerId key.
       // Partners and admins can read all orders.
       allow read: if isSignedIn() && (
         resource.data.userId == request.auth.uid ||
+        resource.data.customerId == request.auth.uid ||
         isPartner()
       );
 
-      // Customers can create an order only if userId matches their uid.
-      // They cannot set any privileged fields.
+      // Customers can create an order only if their auth uid matches the stored keys.
+      // We support both the current and legacy key layout without rejecting valid orders.
       allow create: if isSignedIn() &&
-        request.resource.data.userId == request.auth.uid &&
+        ((request.resource.data.userId == request.auth.uid) ||
+         (request.resource.data.customerId == request.auth.uid)) &&
         !request.resource.data.keys().hasAny(["adminNote", "partnerNote"]);
 
       // Customers can only cancel their own pending orders.
@@ -73,7 +76,7 @@ service cloud.firestore {
         // Partner/admin can update anything
         isPartner() ||
         // Customer can only cancel their own order, nothing else
-        (resource.data.userId == request.auth.uid &&
+        ((resource.data.userId == request.auth.uid || resource.data.customerId == request.auth.uid) &&
          request.resource.data.diff(resource.data).affectedKeys().hasOnly(["status"]) &&
          request.resource.data.status == "cancelled" &&
          resource.data.status == "pending")
