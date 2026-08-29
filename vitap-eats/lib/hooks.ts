@@ -69,11 +69,20 @@ export function useRestaurant(slug: string) {
       if (!rest) return null;
       const menuItems = await getMenu(rest.id);
       const menu = menuItems.reduce((acc, item) => {
-        if (!acc[item.category]) acc[item.category] = [];
-        acc[item.category].push(item);
+        const rawCategory = (item.category ?? "Other").trim() || "Other";
+        const key = rawCategory.toLowerCase();
+        const displayLabel = rawCategory;
+        if (!acc[key]) acc[key] = { label: displayLabel, items: [] as MenuItem[] };
+        acc[key].items.push(item);
         return acc;
-      }, {} as Record<string, MenuItem[]>);
-      return { ...rest, menu };
+      }, {} as Record<string, { label: string; items: MenuItem[] }>);
+
+      return {
+        ...rest,
+        menu: Object.fromEntries(
+          Object.entries(menu).map(([key, value]) => [value.label, value.items])
+        ),
+      };
     },
     enabled: !!slug,
     staleTime: 2 * 60 * 1000,

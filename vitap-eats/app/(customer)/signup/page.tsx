@@ -19,6 +19,7 @@ function SignupForm() {
 
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError]         = useState<string | null>(null);
+  const isPartnerFlow = nextParam.startsWith("/partner") || nextParam.includes("partner");
 
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -51,11 +52,16 @@ function SignupForm() {
   return (
     <div className="w-full max-w-md bg-[--color-surface-container-lowest] rounded-[--radius-lg] shadow-[--shadow-lg] p-6 md:p-8 border border-[--color-border]">
       <div className="text-center mb-8">
+        {isPartnerFlow && (
+          <p className="text-xs font-bold uppercase tracking-[0.18em] mb-2" style={{ color: "var(--color-primary)" }}>
+            Partner with us
+          </p>
+        )}
         <h1 className="text-2xl font-extrabold text-[--color-on-surface] mb-2" style={{ fontFamily: "var(--font-heading)" }}>
-          Create an Account
+          {isPartnerFlow ? "Partner with us" : "Create an Account"}
         </h1>
         <p className="text-sm text-[--color-on-surface-variant]">
-          Join VIT-AP Eats to get food delivered fast.
+          {isPartnerFlow ? "Join VIT-AP Eats as a restaurant partner and grow your campus orders." : "Join VIT-AP Eats to get food delivered fast."}
         </p>
       </div>
 

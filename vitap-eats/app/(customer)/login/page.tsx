@@ -15,6 +15,7 @@ function LoginForm() {
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError]       = useState<string | null>(null);
+  const isPartnerFlow = nextParam.startsWith("/partner") || nextParam.includes("partner");
 
   const handleEmailLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -36,11 +37,16 @@ function LoginForm() {
         <div className="w-12 h-12 rounded-[--radius-md] flex items-center justify-center text-white text-xl font-bold mx-auto mb-4 shadow-[--shadow-md]" style={{ background: "var(--color-primary)" }}>
           VE
         </div>
+        {isPartnerFlow && (
+          <p className="text-xs font-bold uppercase tracking-[0.18em] mb-2" style={{ color: "var(--color-primary)" }}>
+            Partner with us
+          </p>
+        )}
         <h1 className="text-2xl font-extrabold text-[--color-on-surface] mb-2" style={{ fontFamily: "var(--font-heading)" }}>
-          Welcome Back
+          {isPartnerFlow ? "Partner with us" : "Welcome Back"}
         </h1>
         <p className="text-sm text-[--color-on-surface-variant]">
-          Log in to order from your favorite campus spots
+          {isPartnerFlow ? "Access your partner dashboard and manage your restaurant." : "Log in to order from your favorite campus spots"}
         </p>
       </div>
 

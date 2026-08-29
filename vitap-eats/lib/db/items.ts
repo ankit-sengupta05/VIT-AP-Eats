@@ -50,6 +50,10 @@ export async function deleteMenuItem(id: string): Promise<void> {
   await deleteDoc(doc(db, "menu_items", id));
 }
 
+export function normalizeCategory(value: string): string {
+  return (value ?? "").trim().toLowerCase();
+}
+
 export async function getMenuByRestaurant(restaurantId: string): Promise<MenuItem[]> {
   const q = query(collection(db, "menu_items"), where("restaurantId", "==", restaurantId));
   const snap = await getDocs(q);
@@ -57,12 +61,13 @@ export async function getMenuByRestaurant(restaurantId: string): Promise<MenuIte
 }
 
 export async function getAllMenuItems(category?: string): Promise<MenuItem[]> {
-  let q = query(collection(db, "menu_items"));
-  if (category && category !== "all") {
-    q = query(collection(db, "menu_items"), where("category", "==", category));
-  }
-  const snap = await getDocs(q);
-  return snap.docs.map((d) => ({ id: d.id, ...d.data() } as MenuItem));
+  const snap = await getDocs(collection(db, "menu_items"));
+  const items = snap.docs.map((d) => ({ id: d.id, ...d.data() } as MenuItem));
+
+  if (!category || category === "all") return items;
+
+  const targetCategory = normalizeCategory(category);
+  return items.filter((item) => normalizeCategory(item.category ?? "") === targetCategory);
 }
 
 /** Live subscription to menu items (partner dashboard) */
