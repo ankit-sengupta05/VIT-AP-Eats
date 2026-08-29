@@ -9,6 +9,14 @@ import { onAuthStateChanged } from "firebase/auth";
 
 function getStoredUid(): string | null {
   if (typeof document === "undefined") return null;
+
+  try {
+    const localValue = localStorage.getItem("app_uid");
+    if (localValue) return localValue;
+  } catch {
+    // Ignore storage issues in private browsing or restricted environments.
+  }
+
   const match = document.cookie
     .split("; ")
     .find((entry) => entry.startsWith("app_uid="));

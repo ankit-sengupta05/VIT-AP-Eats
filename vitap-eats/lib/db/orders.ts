@@ -111,13 +111,11 @@ export async function getUserOrders(userId: string): Promise<Order[]> {
   const normalizedUserId = userId.trim();
   const q1 = query(
     collection(db, "orders"),
-    where("userId", "==", normalizedUserId),
-    orderBy("createdAt", "desc")
+    where("userId", "==", normalizedUserId)
   );
   const q2 = query(
     collection(db, "orders"),
-    where("customerId", "==", normalizedUserId),
-    orderBy("createdAt", "desc")
+    where("customerId", "==", normalizedUserId)
   );
 
   const [snap1, snap2] = await Promise.all([getDocs(q1), getDocs(q2)]);
@@ -142,35 +140,41 @@ export function subscribeToUserOrders(
 
   const q1 = query(
     collection(db, "orders"),
-    where("userId", "==", normalizedUserId),
-    orderBy("createdAt", "desc")
+    where("userId", "==", normalizedUserId)
   );
   const q2 = query(
     collection(db, "orders"),
-    where("customerId", "==", normalizedUserId),
-    orderBy("createdAt", "desc")
+    where("customerId", "==", normalizedUserId)
   );
 
-  let latest: Order[] = [];
-  const emit = () => callback(mergeOrdersById(latest).sort((a, b) => {
-    const aTime = a.createdAt?.toMillis?.() ?? 0;
-    const bTime = b.createdAt?.toMillis?.() ?? 0;
-    return bTime - aTime;
-  }));
+  const userOrders = new Map<string, Order>();
+  const customerOrders = new Map<string, Order>();
+
+  const emit = () => {
+    const merged = mergeOrdersById([
+      ...userOrders.values(),
+      ...customerOrders.values(),
+    ]).sort((a, b) => {
+      const aTime = a.createdAt?.toMillis?.() ?? 0;
+      const bTime = b.createdAt?.toMillis?.() ?? 0;
+      return bTime - aTime;
+    });
+    callback(merged);
+  };
 
   const unsub1 = onSnapshot(q1, (snap) => {
-    latest = [
-      ...snap.docs.map((d) => ({ id: d.id, ...d.data() } as Order)),
-      ...latest.filter((order) => !snap.docs.some((d) => d.id === order.id)),
-    ];
+    userOrders.clear();
+    for (const docSnap of snap.docs) {
+      userOrders.set(docSnap.id, { id: docSnap.id, ...docSnap.data() } as Order);
+    }
     emit();
   });
 
   const unsub2 = onSnapshot(q2, (snap) => {
-    latest = [
-      ...latest.filter((order) => !snap.docs.some((d) => d.id === order.id)),
-      ...snap.docs.map((d) => ({ id: d.id, ...d.data() } as Order)),
-    ];
+    customerOrders.clear();
+    for (const docSnap of snap.docs) {
+      customerOrders.set(docSnap.id, { id: docSnap.id, ...docSnap.data() } as Order);
+    }
     emit();
   });
 
