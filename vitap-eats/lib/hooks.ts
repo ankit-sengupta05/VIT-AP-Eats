@@ -1,5 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import { getRestaurants, getRestaurantBySlug, getMenu } from "@/lib/db/restaurants";
 import { getAllMenuItems, type MenuItem } from "@/lib/db/items";
 import { getUserOrders, subscribeToUserOrders, updateOrderStatus, type Order } from "@/lib/db/orders";
@@ -73,33 +73,52 @@ export function useOrders() {
   const [isError, setIsError] = useState<boolean>(false);
 
   useEffect(() => {
-    // Auth session not yet restored — stay in loading state
     if (uid === undefined) return;
 
-    // Not logged in — schedule state update via microtask to avoid sync setState in effect
     if (uid === null) {
       const timer = setTimeout(() => {
         setOrders([]);
         setIsLoading(false);
+        setIsError(false);
       }, 0);
       return () => clearTimeout(timer);
     }
 
-    // Logged in — fetch in async callback (not synchronous body)
     let cancelled = false;
+    let unsubscribe: (() => void) | undefined;
+
     setIsLoading(true);
     setIsError(false);
 
-    const unsubscribe = subscribeToUserOrders(uid, (data) => {
-      if (!cancelled) {
-        setOrders(data);
-        setIsLoading(false);
+    const loadOrders = async () => {
+      try {
+        const initialOrders = await getUserOrders(uid);
+        if (!cancelled) {
+          setOrders(initialOrders);
+          setIsLoading(false);
+        }
+      } catch {
+        if (!cancelled) {
+          setOrders([]);
+          setIsError(true);
+          setIsLoading(false);
+        }
       }
-    });
+
+      unsubscribe = subscribeToUserOrders(uid, (data) => {
+        if (!cancelled) {
+          setOrders(data);
+          setIsLoading(false);
+          setIsError(false);
+        }
+      });
+    };
+
+    loadOrders();
 
     return () => {
       cancelled = true;
-      unsubscribe();
+      unsubscribe?.();
     };
   }, [uid]);
 

@@ -18,7 +18,14 @@ export default function MobileBottomNav() {
   const count = useCartStore((s) => s.count());
 
   return (
-    <nav className="md:hidden fixed bottom-0 inset-x-0 z-50 bg-[--color-surface-container-lowest] border-t border-[--color-border] safe-area-pb">
+    <nav
+      className="md:hidden fixed bottom-0 inset-x-0 z-50 border-t border-[--color-border]"
+      style={{
+        backgroundColor: "var(--color-surface-container-lowest)",
+        boxShadow: "0 -2px 12px rgba(0, 0, 0, 0.12)",
+        paddingBottom: "calc(env(safe-area-inset-bottom, 0px) + 0.2rem)",
+      }}
+    >
       <div className="flex">
         {NAV.map(({ href, icon: Icon, label, cart }) => {
           const active = pathname === href;
