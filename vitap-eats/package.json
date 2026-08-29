@@ -9,10 +9,7 @@
     "lint": "eslint .",
     "generate-icons": "node scripts/generate-icons.js",
     "sync-env": "node scripts/sync-env.js",
-    "audit-ci": "npm audit --audit-level=critical",
-    "preview": "npx opennextjs-cloudflare build && npx opennextjs-cloudflare preview",
-    "deploy": "npx opennextjs-cloudflare build && npx opennextjs-cloudflare deploy",
-    "cf-typegen": "npx wrangler types --env-interface CloudflareEnv"
+    "audit-ci": "npm audit --audit-level=critical"
   },
   "dependencies": {
     "@ducanh2912/next-pwa": "^10.2.9",

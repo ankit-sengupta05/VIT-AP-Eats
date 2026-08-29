@@ -50,8 +50,8 @@ export default function CartPage() {
   const [couponError, setCouponError] = useState<string | null>(null);
   const [couponLoading, setCouponLoading] = useState(false);
 
-  const DELIVERY_FEE = 30;
-  const PLATFORM_FEE = 5;
+  const DELIVERY_FEE = 0;
+  const PLATFORM_FEE = 0;
   const discount = appliedCoupon?.discount_amount ?? 0;
   const grandTotal = subtotal + DELIVERY_FEE + PLATFORM_FEE - discount;
 

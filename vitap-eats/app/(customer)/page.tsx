@@ -232,56 +232,6 @@ export default function HomePage() {
           </div>
         </section>
 
-        {/* ── PROMO BANNER ─────────────────────────────────── */}
-        <section>
-          <div
-            className="relative overflow-hidden px-5 py-5 flex flex-col gap-3"
-            style={{
-              background: "var(--color-primary)",
-              borderRadius: "var(--radius-xl)",
-            }}
-          >
-            {/* Decorative circle (no transparency — just slightly lighter bg) */}
-            <div
-              className="absolute -top-8 -right-8 w-32 h-32 rounded-full"
-              style={{ background: "var(--color-primary-container)" }}
-            />
-            <div className="relative">
-              <span
-                className="text-[11px] font-bold uppercase tracking-widest px-2.5 py-1 mb-2 inline-block"
-                style={{
-                  background: "var(--color-on-primary)",
-                  color: "var(--color-primary)",
-                  borderRadius: "var(--radius-full)",
-                }}
-              >
-                Limited Time
-              </span>
-              <h3
-                className="text-lg font-extrabold leading-tight mb-1"
-                style={{ color: "var(--color-on-primary)", fontFamily: "var(--font-heading)" }}
-              >
-                First order? Get 50% OFF
-              </h3>
-              <p className="text-xs mb-3" style={{ color: "var(--color-primary-fixed)" }}>
-                Use code <strong style={{ color: "var(--color-on-primary)" }}>VITAP50</strong> · Max ₹100 off
-              </p>
-              <Link
-                href="/search"
-                className="inline-flex items-center gap-2 px-5 py-2.5 text-sm font-bold"
-                style={{
-                  background: "var(--color-on-primary)",
-                  color: "var(--color-primary)",
-                  borderRadius: "var(--radius-full)",
-                  fontFamily: "var(--font-heading)",
-                }}
-              >
-                Order Now <ChevronRight size={14} />
-              </Link>
-            </div>
-          </div>
-        </section>
-
         {/* ── RESTAURANTS / MENU GRID ──────────────────────── */}
         <section>
           <div className="flex items-center justify-between mb-3">
@@ -397,7 +347,8 @@ export default function HomePage() {
             VIT-AP Eats
           </span>
           <span>© 2026 · Made on campus ❤️</span>
-          <div className="flex gap-3">
+          <div className="flex flex-wrap items-center gap-3">
+            <a href="tel:+919034537165" className="hover:underline" style={{ color: "var(--color-primary)" }}>Call: +91 90345 37165</a>
             <Link href="/partner/apply" className="hover:underline" style={{ color: "var(--color-primary)" }}>Partner</Link>
             <Link href="/admin" className="hover:underline" style={{ color: "var(--color-primary)" }}>Admin</Link>
           </div>
