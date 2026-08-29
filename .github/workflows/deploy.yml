@@ -29,6 +29,6 @@ jobs:
         working-directory: ./vitap-eats
         run: npm run lint
 
-  # NOTE: Build & deployment is handled automatically by Vercel's GitHub integration.
-  # Vercel has the real Firebase env vars configured and builds on every push to main.
-  # Monitor deployments at: https://vercel.com/dashboard
+  # NOTE: This project deploys through Vercel only.
+  # There is no separate Cloudflare worker build step in this workflow.
+  # Vercel handles the production build and deployment from main.
