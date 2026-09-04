@@ -60,7 +60,31 @@ export async function createOrder(
     status: "pending",
     createdAt: serverTimestamp(),
   });
+
+  // Fire-and-forget: notify admin app via FCM. Never blocks checkout.
+  notifyAdmin({
+    orderId:        ref.id,
+    customerName:   data.userName,
+    restaurantName: data.restaurantName,
+    total:          data.total,
+  }).catch((err) => console.warn("[FCM] Admin notify failed:", err));
+
   return ref.id;
+}
+
+/** Calls the Next.js API route which sends FCM push to admin devices. */
+async function notifyAdmin(payload: {
+  orderId: string;
+  customerName: string;
+  restaurantName: string;
+  total: number;
+}): Promise<void> {
+  const secret = process.env.NEXT_PUBLIC_ADMIN_NOTIFY_SECRET ?? "";
+  await fetch("/api/notify-admin", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ ...payload, secret }),
+  });
 }
 
 export async function updateOrderStatus(
