@@ -88,7 +88,7 @@ export async function POST(request: NextRequest) {
           color:        "#FF6B35",
           priority:     "max" as const,
           defaultSound: "true",
-          vibrateTimingsMillis: ["0", "400", "200", "400"],
+          vibrateTimingsMillis: [0, 400, 200, 400],
         },
       },
     };
