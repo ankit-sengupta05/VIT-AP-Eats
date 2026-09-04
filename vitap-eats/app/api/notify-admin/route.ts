@@ -87,7 +87,7 @@ export async function POST(request: NextRequest) {
           channelId:    "new_orders",
           color:        "#FF6B35",
           priority:     "max" as const,
-          defaultSound: "true",
+          defaultSound: true,
           vibrateTimingsMillis: [0, 400, 200, 400],
         },
       },
