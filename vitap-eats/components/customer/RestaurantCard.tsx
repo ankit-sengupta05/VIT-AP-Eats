@@ -175,14 +175,12 @@ export default function RestaurantCard({ r }: { r: Restaurant }) {
           >
             🕔 By Evening
           </span>
-          {r.deliveryFee === 0 && (
-            <span
-              className="ml-auto font-semibold"
-              style={{ color: "var(--color-success)" }}
-            >
-              Free
-            </span>
-          )}
+          <span
+            className="ml-auto font-semibold"
+            style={{ color: "var(--color-success)" }}
+          >
+            Free
+          </span>
         </div>
       </div>
     </Link>

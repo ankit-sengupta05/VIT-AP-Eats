@@ -77,7 +77,7 @@ export default function RestaurantPage({ params }: { params: Promise<{ slug: str
               <Star size={14} fill="currentColor" />{restaurant.rating}
             </span>
             <span className="flex items-center gap-1.5 text-[--color-on-surface-variant]">
-              <Bike size={14} />{restaurant.deliveryFee === 0 ? "Free delivery" : rupees(restaurant.deliveryFee)}
+              <Bike size={14} />Free delivery
             </span>
             <span className="flex items-center gap-1.5 text-[--color-on-surface-variant]"><Info size={14} />Receive by Evening</span>
           </div>
