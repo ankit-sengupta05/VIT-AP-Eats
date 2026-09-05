@@ -2,7 +2,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { Search, MapPin, ChevronRight, Flame, Star, TrendingUp, Package } from "lucide-react";
+import { Search, MapPin, ChevronRight, Flame, Star, TrendingUp, Package, Gift } from "lucide-react";
 import RestaurantCard from "@/components/customer/RestaurantCard";
 import { RestaurantGridSkeleton } from "@/components/ui/Skeleton";
 import { useRestaurants, useMenuItems } from "@/lib/hooks";
@@ -136,6 +136,33 @@ export default function HomePage() {
       </section>
 
       <div className="px-4 py-5 space-y-8">
+
+        {/* ── PROMO CARD ─────────────────────────────── */}
+        <section>
+          <div 
+            className="relative overflow-hidden p-5 flex items-center justify-between transition-transform active:scale-[0.98]"
+            style={{ 
+              background: "linear-gradient(135deg, var(--color-primary) 0%, #FF8A50 100%)",
+              borderRadius: "var(--radius-xl)",
+              boxShadow: "0 8px 20px -6px rgba(255, 107, 53, 0.5)",
+              color: "var(--color-on-primary)"
+            }}
+          >
+            <div className="relative z-10 max-w-[80%]">
+              <h3 className="font-extrabold text-lg mb-1" style={{ fontFamily: "var(--font-heading)" }}>
+                Special Offer! ✨
+              </h3>
+              <p className="text-[13px] font-medium leading-tight" style={{ color: "var(--color-primary-fixed)" }}>
+                Order above <span className="font-bold text-white">₹700</span> and receive a <span className="font-bold text-white">complimentary surprise</span> with your meal!
+              </p>
+            </div>
+            
+            {/* Decorative element */}
+            <div className="absolute -right-4 -bottom-4 opacity-20 pointer-events-none">
+              <Gift size={100} strokeWidth={1.5} />
+            </div>
+          </div>
+        </section>
 
         {/* ── CUISINE FILTERS ─────────────────────────────── */}
         <section>
