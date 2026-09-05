@@ -98,8 +98,8 @@ export default function HomePage() {
 
         {/* Small offer pill in banner */}
         <div className="inline-flex items-center gap-1.5 px-2.5 py-1 mb-5 rounded-full" style={{ background: "rgba(255, 255, 255, 0.15)", border: "1px solid rgba(255, 255, 255, 0.2)" }}>
-          <Gift size={12} style={{ color: "var(--color-on-primary)" }} />
-          <span className="text-[11px] font-bold tracking-wide" style={{ color: "var(--color-on-primary)" }}>
+          <Gift size={12} style={{ color: "#ffffff" }} />
+          <span className="text-[11px] font-bold tracking-wide" style={{ color: "#ffffff" }}>
             ORDER ABOVE ₹700 FOR A SURPRISE
           </span>
         </div>
@@ -153,20 +153,20 @@ export default function HomePage() {
               background: "linear-gradient(135deg, var(--color-primary) 0%, #FF8A50 100%)",
               borderRadius: "var(--radius-xl)",
               boxShadow: "0 8px 20px -6px rgba(255, 107, 53, 0.5)",
-              color: "white"
+              color: "#ffffff"
             }}
           >
             <div className="relative z-10 max-w-[80%]">
-              <h3 className="font-extrabold text-lg mb-1 text-white shadow-sm" style={{ fontFamily: "var(--font-heading)", textShadow: "0 1px 2px rgba(0,0,0,0.1)" }}>
+              <h3 className="font-extrabold text-lg mb-1 shadow-sm" style={{ fontFamily: "var(--font-heading)", textShadow: "0 1px 2px rgba(0,0,0,0.1)", color: "#ffffff" }}>
                 Special Offer! ✨
               </h3>
-              <p className="text-[13px] font-medium leading-tight text-white/95">
-                Order above <span className="font-extrabold text-white">₹700</span> and receive a <span className="font-extrabold text-white">complimentary surprise</span> with your meal!
+              <p className="text-[13px] font-medium leading-tight" style={{ color: "rgba(255,255,255,0.95)" }}>
+                Order above <span className="font-extrabold" style={{ color: "#ffffff" }}>₹700</span> and receive a <span className="font-extrabold" style={{ color: "#ffffff" }}>complimentary surprise</span> with your meal!
               </p>
             </div>
             
             {/* Decorative element */}
-            <div className="absolute -right-4 -bottom-4 opacity-20 pointer-events-none text-white">
+            <div className="absolute -right-4 -bottom-4 opacity-20 pointer-events-none" style={{ color: "#ffffff" }}>
               <Gift size={100} strokeWidth={1.5} />
             </div>
           </div>
